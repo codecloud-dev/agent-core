@@ -1,0 +1,55 @@
+{
+  "name": "@mox/agent-core",
+  "version": "0.1.0",
+  "description": "Runtime-agnostic core for autonomous ops agents: a metacognition protocol (think/reflect) plus tiered-autonomy guardrails (tool tiers, daily circuit-breaker, shadow mode).",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
+    "build:cjs": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --log-level=error",
+    "build:esm": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --log-level=error",
+    "build:types": "tsc -p tsconfig.json",
+    "test": "bash tests/run.sh"
+  },
+  "keywords": [
+    "agent",
+    "metacognition",
+    "guardrails",
+    "llm",
+    "autonomous",
+    "ops",
+    "sre",
+    "ai",
+    "typescript"
+  ],
+  "author": "codecloud-dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/codecloud-dev/agent-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/codecloud-dev/agent-core/issues"
+  },
+  "homepage": "https://github.com/codecloud-dev/agent-core#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.0",
+    "typescript": "^5.4.0"
+  }
+}

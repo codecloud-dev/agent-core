@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@mox/agent-core · 文档 / Docs</title>
+<meta name="description" content="@mox/agent-core — 元认知协议引擎 + 分级自主护栏，平台无关的运维 Agent 核心。">
+<style>
+  :root{
+    --bg:#07080c; --panel:rgba(255,255,255,.045); --panel-2:rgba(255,255,255,.07);
+    --line:rgba(255,255,255,.10); --line-2:rgba(255,255,255,.18);
+    --fg:#e9edf5; --fg-dim:#9aa4b8; --fg-mute:#6b7488;
+    --c1:#37d5d3; --c2:#8a7bff; --c3:#ff7ac3;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --r:16px; --shadow:0 10px 40px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg); color:var(--fg); font-family:var(--sans);
+    line-height:1.7; -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(900px 500px at 12% -8%, rgba(55,213,211,.13), transparent 60%),
+      radial-gradient(800px 480px at 88% 4%, rgba(138,123,255,.14), transparent 62%),
+      radial-gradient(700px 420px at 50% 100%, rgba(255,122,195,.07), transparent 60%);
+    background-attachment:fixed;
+  }
+  .lang-switch{
+    position:fixed; top:16px; right:16px; z-index:100;
+    display:flex; padding:4px; gap:2px;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:999px; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    box-shadow:var(--shadow);
+  }
+  .lang-switch button{
+    font:600 13px/1 var(--sans); color:var(--fg-dim); cursor:pointer;
+    padding:8px 16px; border:0; border-radius:999px; background:transparent; transition:.22s;
+  }
+  .lang-switch button:hover{color:var(--fg)}
+  .lang-switch button.active{
+    color:#06121a; background:linear-gradient(135deg,var(--c1),var(--c2));
+    box-shadow:0 2px 12px rgba(55,213,211,.35);
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:88px 24px 120px}
+  header{text-align:center;margin-bottom:56px}
+  .logo{
+    width:92px;height:92px;margin:0 auto 20px;border-radius:24px;display:grid;place-items:center;
+    font-size:44px;font-weight:800;
+    background:linear-gradient(135deg,var(--c1),var(--c2) 60%,var(--c3));
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    box-shadow:0 8px 40px rgba(55,213,211,.28);
+  }
+  h1{font-size:clamp(30px,5.5vw,46px);font-weight:800;letter-spacing:-.02em;
+     background:linear-gradient(120deg,var(--c1),var(--c2) 55%,var(--c3));
+     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .tag{color:var(--fg-dim);font-size:17px;margin-top:12px}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:24px}
+  .badge{font:600 12px/1 var(--sans);color:var(--fg-dim);padding:7px 13px;
+    background:var(--panel);border:1px solid var(--line);border-radius:999px}
+  .badge b{color:var(--c1)}
+  nav.toc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:36px 0 8px}
+  nav.toc a{font-size:13.5px;color:var(--fg-dim);text-decoration:none;padding:8px 15px;
+    background:var(--panel);border:1px solid var(--line);border-radius:999px;transition:.2s}
+  nav.toc a:hover{color:var(--fg);border-color:var(--line-2);background:var(--panel-2)}
+  section{margin-top:52px;padding:30px;border-radius:var(--r);
+    background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(10px)}
+  h2{font-size:24px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:11px}
+  h2::before{content:"";width:4px;height:22px;border-radius:2px;background:linear-gradient(var(--c1),var(--c2))}
+  h3{font-size:17px;font-weight:650;margin:24px 0 10px;color:var(--fg)}
+  p{color:var(--fg-dim);margin-bottom:14px}
+  p strong,li strong{color:var(--fg);font-weight:600}
+  ul,ol{color:var(--fg-dim);margin:0 0 14px 22px}
+  li{margin-bottom:7px}
+  pre{background:rgba(0,0,0,.42);border:1px solid var(--line);border-radius:12px;
+    padding:18px;overflow-x:auto;margin-bottom:16px}
+  code{font-family:var(--mono);font-size:13.5px;color:#cfe3ff}
+  pre code{color:#d6e6ff}
+  :not(pre)>code{background:var(--panel-2);padding:2px 7px;border-radius:6px;
+    border:1px solid var(--line);font-size:.9em}
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .card{padding:20px;border-radius:13px;background:rgba(255,255,255,.03);border:1px solid var(--line);transition:.22s}
+  .card:hover{border-color:var(--line-2);transform:translateY(-2px)}
+  .card h4{font-size:15.5px;font-weight:650;color:var(--c1);margin-bottom:7px}
+  .card p{font-size:14px;margin:0}
+  table{width:100%;border-collapse:collapse;margin-bottom:16px;font-size:14.5px}
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--fg);font-weight:650;font-size:13.5px;text-transform:uppercase;letter-spacing:.04em}
+  td{color:var(--fg-dim)}
+  .install{display:flex;gap:10px;align-items:center;background:rgba(0,0,0,.42);
+    border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 18px;margin-bottom:16px}
+  .install code{flex:1;font-size:14.5px;color:var(--c1)}
+  .install button{font:600 12.5px/1 var(--sans);color:var(--fg);cursor:pointer;white-space:nowrap;
+    padding:9px 15px;border-radius:8px;border:1px solid var(--line-2);background:var(--panel-2);transition:.2s}
+  .install button:hover{background:rgba(255,255,255,.12)}
+  .install button.done{color:var(--c1);border-color:var(--c1)}
+  .tier{display:inline-block;font:700 11px/1 var(--mono);padding:4px 9px;border-radius:6px;margin-right:6px}
+  .tier.low{color:var(--c1);background:rgba(55,213,211,.12);border:1px solid rgba(55,213,211,.3)}
+  .tier.mid{color:#ffb454;background:rgba(255,180,84,.12);border:1px solid rgba(255,180,84,.3)}
+  .tier.high{color:var(--c3);background:rgba(255,122,195,.12);border:1px solid rgba(255,122,195,.3)}
+  .links{display:flex;flex-wrap:wrap;gap:11px;margin-top:22px}
+  .links a{font:600 14px/1 var(--sans);color:var(--fg);text-decoration:none;padding:12px 20px;
+    border-radius:11px;border:1px solid var(--line);background:var(--panel-2);transition:.22s}
+  .links a:hover{border-color:var(--c1);color:var(--c1);transform:translateY(-2px)}
+  footer{text-align:center;color:var(--fg-mute);font-size:13px;margin-top:64px;padding-top:28px;border-top:1px solid var(--line)}
+  footer a{color:var(--fg-dim)}
+  html[data-lang="zh"] [data-l="en"]{display:none !important}
+  html[data-lang="en"] [data-l="zh"]{display:none !important}
+  @media(max-width:560px){
+    .wrap{padding:76px 16px 90px}
+    section{padding:22px 18px}
+    .lang-switch{top:12px;right:12px}
+    .lang-switch button{padding:7px 13px;font-size:12px}
+  }
+</style>
+</head>
+<body>
+
+<div class="lang-switch" role="group" aria-label="Language / 语言">
+  <button id="btn-zh" data-set="zh">中文</button>
+  <button id="btn-en" data-set="en">English</button>
+</div>
+
+<div class="wrap">
+<header>
+  <div class="logo">@</div>
+  <h1>@mox/agent-core</h1>
+  <p class="tag" data-l="zh">元认知协议引擎 + 分级自主护栏 —— 平台无关的运维 Agent 核心</p>
+  <p class="tag" data-l="en">Metacognition engine + tiered-autonomy guardrails — a runtime-agnostic core for ops agents</p>
+  <div class="badges">
+    <span class="badge"><b>0</b> <span data-l="zh">平台绑定</span><span data-l="en">platform deps</span></span>
+    <span class="badge"><b>47</b> <span data-l="zh">项测试</span><span data-l="en">tests</span></span>
+    <span class="badge">TypeScript</span>
+    <span class="badge">MIT</span>
+    <span class="badge" data-l="zh">依赖注入</span><span class="badge" data-l="en">DI-based</span>
+  </div>
+  <nav class="toc">
+    <a href="#why"       data-l="zh">为什么</a><a href="#why"       data-l="en">Why</a>
+    <a href="#install"   data-l="zh">安装</a><a href="#install"   data-l="en">Install</a>
+    <a href="#meta"      data-l="zh">元认知</a><a href="#meta"     data-l="en">Metacognition</a>
+    <a href="#guard"     data-l="zh">护栏</a><a href="#guard"     data-l="en">Guardrails</a>
+    <a href="#runtime"   data-l="zh">运行时</a><a href="#runtime"  data-l="en">Runtime</a>
+    <a href="#links"     data-l="zh">链接</a><a href="#links"     data-l="en">Links</a>
+  </nav>
+</header>
+
+<!-- ============ 为什么 ============ -->
+<section id="why">
+  <h2><span data-l="zh">这是什么</span><span data-l="en">What is this</span></h2>
+  <p data-l="zh">一个把「会思考的运维 Agent」里<b>真正难复用</b>的那部分抽出来的核心库：<strong>元认知协议</strong>（think / reflect 闭环）与<strong>分级自主护栏</strong>（工具分级、单日熔断、影子模式）。它不是 prompt 模板，而是<strong>可测试的架构</strong>——平台无关、依赖注入、47 项测试覆盖。</p>
+  <p data-l="en">The reusable core of a "thinking" ops agent: a <strong>metacognition protocol</strong> (think / reflect loop) and <strong>tiered-autonomy guardrails</strong> (tool tiers, daily circuit-breaker, shadow mode). Not a prompt template — a <strong>testable architecture</strong>: runtime-agnostic, dependency-injected, covered by 47 tests.</p>
+
+  <div class="grid">
+    <div class="card">
+      <h4 data-l="zh">元认知引擎</h4><h4 data-l="en">Metacognition engine</h4>
+      <p data-l="zh">结构化推理卡（think）+ 执行后自检卡（reflect）+ 闭环门（未反思不许收尾）</p>
+      <p data-l="en">Structured think cards + post-action reflect cards + a gate that blocks premature answers</p>
+    </div>
+    <div class="card">
+      <h4 data-l="zh">分级护栏</h4><h4 data-l="en">Tiered guardrails</h4>
+      <p data-l="zh">工具分低/中/高三级；低危自动、中危熔断计数、高危永远需人确认</p>
+      <p data-l="en">Tools tiered low/mid/high; low runs free, mid consumes a daily budget, high always needs a human</p>
+    </div>
+    <div class="card">
+      <h4 data-l="zh">影子模式</h4><h4 data-l="en">Shadow mode</h4>
+      <p data-l="zh">先"只模拟不执行"地跑中危动作，攒够信心再放开——把风险关在门外</p>
+      <p data-l="en">Dry-run mid-tier actions first, gain confidence, then open the gate</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 安装 ============ -->
+<section id="install">
+  <h2><span data-l="zh">安装</span><span data-l="en">Install</span></h2>
+  <div class="install">
+    <code id="inst-cmd">npm install @mox/agent-core</code>
+    <button data-copy="#inst-cmd" id="copy-btn">复制 Copy</button>
+  </div>
+  <pre><code>import { normalizeActions, guardExecute, ReflectGate } from '@mox/agent-core';</code></pre>
+</section>
+
+<!-- ============ 元认知 ============ -->
+<section id="meta">
+  <h2><span data-l="zh">元认知协议</span><span data-l="en">Metacognition protocol</span></h2>
+  <p data-l="zh">模型每轮可输出 <code>think</code>（外显结构化推理：目标 / 假设 / 查证 / 四视角）、<code>reflect</code>（执行后自检：结论 / 副作用 / 更优解 / 置信度）、<code>call</code>（调工具）或 <code>answer</code>。核心负责把它们规范化并强制闭环。</p>
+  <p data-l="en">Each turn the model may emit <code>think</code> (structured reasoning: goal / assumptions / checks / four perspectives), <code>reflect</code> (post-action self-check: verdict / side effects / better way / confidence), <code>call</code> (invoke a tool) or <code>answer</code>. The core normalizes these and enforces the loop.</p>
+
+  <h3 data-l="zh">动作归一化（健壮解析）</h3>
+  <h3 data-l="en">Action normalization (robust parsing)</h3>
+  <p data-l="zh">模型常常不守协议，一次吐一个 JSON <b>数组</b>。若只按单对象解析，后面的 <code>call</code> 会被静默吞掉——这正是"只思考不干活"的根因。<code>normalizeActions</code> 把单对象 / 数组 / 带 markdown 包裹的输出统一归一化成动作数组，逐个执行，一个不丢。</p>
+  <p data-l="en">Models often batch actions into a single JSON <b>array</b>. Naive single-object parsing silently drops the trailing <code>call</code> — the classic "thinks but never acts" bug. <code>normalizeActions</code> folds single objects, arrays, and markdown-fenced output into one action array, executed item by item.</p>
+  <pre><code>import { normalizeActions } from '@mox/agent-core';
+
+normalizeActions({ action: 'think', reasoning: { goal: '…' } });
+// → [{ action: 'think', … }]
+
+normalizeActions([
+  { action: 'think', reasoning: { goal: '体检' } },
+  { action: 'call', tool: 'diagnose', args: {} },
+]);
+// → [think, call]  两个动作都会被处理</code></pre>
+
+  <h3 data-l="zh">闭环门 ReflectGate</h3>
+  <h3 data-l="en">ReflectGate — the closing gate</h3>
+  <p data-l="zh">变更类动作执行后，门被"武装"；在模型 <code>reflect</code> 之前不允许收尾。这样把"执行完就自夸"变成结构上不可能。</p>
+  <p data-l="en">After a mutating action the gate is armed; the agent may not finalize until it reflects. This makes "act then brag" structurally impossible.</p>
+  <pre><code>const gate = new ReflectGate();
+// 循环里：
+if (res.ok &amp;&amp; isMutationTier(tier)) gate.afterMutation();
+if (isReflect(action)) gate.onReflect();
+if (action.action === 'answer' &amp;&amp; gate.isPending) {
+  // 驳回：要求先反思再答复
+  continue;
+}</code></pre>
+
+  <h3 data-l="zh">四视角</h3>
+  <h3 data-l="en">Four perspectives</h3>
+  <p data-l="zh">每个 <code>think</code> 可从四个视角交叉检查，<code>missingPerspectives</code> 能检出漏掉的视角：</p>
+  <p data-l="en">Each <code>think</code> may cross-check four perspectives; <code>missingPerspectives</code> detects which are missing:</p>
+  <table>
+    <thead><tr><th data-l="zh">视角</th><th data-l="en">Perspective</th><th data-l="zh">关注</th><th data-l="en">Focus</th></tr></thead>
+    <tbody>
+      <tr><td><code>站长</code></td><td>Operator</td><td data-l="zh">影响、是否需立即修</td><td data-l="en">Impact, fix urgency</td></tr>
+      <tr><td><code>用户</code></td><td>User</td><td data-l="zh">数据丢失、功能异常</td><td data-l="en">Data loss, broken features</td></tr>
+      <tr><td><code>安全</code></td><td>Security</td><td data-l="zh">是否暴露内部结构</td><td data-l="en">Internal exposure</td></tr>
+      <tr><td><code>成本</code></td><td>Cost</td><td data-l="zh">重试/资源消耗</td><td data-l="en">Retries, resource spend</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============ 护栏 ============ -->
+<section id="guard">
+  <h2><span data-l="zh">分级自主护栏</span><span data-l="en">Tiered-autonomy guardrails</span></h2>
+  <p data-l="zh">不是简单的"要不要批准"，而是<strong>按风险分级</strong>：低危自动放行、 中危计入单日额度、高危永远交给人。</p>
+  <p data-l="en">Not a binary approve/deny — it's <strong>risk-tiered</strong>: low tier runs free, mid tier consumes a daily budget, high tier always defers to a human.</p>
+
+  <table>
+    <thead><tr><th data-l="zh">级别</th><th data-l="en">Tier</th><th data-l="zh">行为</th><th data-l="en">Behavior</th></tr></thead>
+    <tbody>
+      <tr><td><span class="tier low">low</span></td><td>Low</td><td data-l="zh">可逆的小操作，自动执行且不消耗额度</td><td data-l="en">Reversible &amp; small; auto-runs, no budget cost</td></tr>
+      <tr><td><span class="tier mid">mid</span></td><td>Mid</td><td data-l="zh">计入单日熔断额度，超额即停；可切影子模式</td><td data-l="en">Counts toward a daily cap; can run in shadow mode</td></tr>
+      <tr><td><span class="tier high">high</span></td><td>High</td><td data-l="zh">永远需要人工确认（走你原有的批准门）</td><td data-l="en">Always requires human approval (your existing gate)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 data-l="zh">统一执行入口</h3>
+  <h3 data-l="en">One guarded entry point</h3>
+  <pre><code>import { guardExecute, defaultToolTier } from '@mox/agent-core';
+
+const deps = {
+  storage,                                   // 任意 KV（注入）
+  executor: { async execute(action, args) { /* 你的业务执行 */ } },
+  policy: defaultToolTier,
+  remediationTier,                            // 修复类动作的等级
+  logger: console,
+};
+
+const r = await guardExecute(deps, 'disable_channel', { id: 5 });
+// r.ok / r.simulated / r.blocked / r.summary / r.data</code></pre>
+  <p data-l="zh"><code>guardExecute</code> 依次做：查单日熔断 → 判影子模式（仅模拟、不执行）→ 真正执行 → 中危以上计入额度。所有决策都返回结构化结果，可直接推给前端渲染。</p>
+  <p data-l="en"><code>guardExecute</code> runs: check daily breaker → honor shadow mode (simulate only) → execute → count budget for mid+. Every decision returns a structured result you can stream to a UI.</p>
+</section>
+
+<!-- ============ 运行时 ============ -->
+<section id="runtime">
+  <h2><span data-l="zh">运行时抽象</span><span data-l="en">Runtime abstraction</span></h2>
+  <p data-l="zh">核心不依赖任何平台。三个注入接口就够：</p>
+  <p data-l="en">The core depends on no platform. Three injected interfaces are all it takes:</p>
+  <table>
+    <thead><tr><th data-l="zh">接口</th><th data-l="en">Interface</th><th data-l="zh">作用</th><th data-l="en">Role</th></tr></thead>
+    <tbody>
+      <tr><td><code>Storage</code></td><td>Storage</td><td data-l="zh">读写 JSON 状态（额度、影子开关）</td><td data-l="en">Persist JSON state (budget, shadow flag)</td></tr>
+      <tr><td><code>ActionExecutor</code></td><td>ActionExecutor</td><td data-l="zh">真正执行一个动作</td><td data-l="en">Actually perform an action</td></tr>
+      <tr><td><code>ActionLogger</code></td><td>ActionLogger</td><td data-l="zh">审计 / 可观测</td><td data-l="en">Audit / observability</td></tr>
+    </tbody>
+  </table>
+
+  <h3 data-l="zh">Cloudflare D1 适配器</h3>
+  <h3 data-l="en">Cloudflare D1 adapter</h3>
+  <p data-l="zh">自带一个 D1 实现，表名/列名在构造时传入（核心不硬编码任何业务 schema）：</p>
+  <p data-l="en">A D1 implementation ships in the box; table/column names are passed at construction (the core hardcodes no business schema):</p>
+  <pre><code>import { D1Storage } from '@mox/agent-core';
+
+const storage = new D1Storage(env.DB, { table: 'agent_kv' });
+// 期望表结构：CREATE TABLE agent_kv (key TEXT PRIMARY KEY, value TEXT);</code></pre>
+  <p data-l="zh">Node / Vercel 等环境，实现自己的 <code>Storage</code> 即可复用全部护栏与元认知逻辑。</p>
+  <p data-l="en">On Node / Vercel etc., implement your own <code>Storage</code> to reuse all guardrail and metacognition logic.</p>
+</section>
+
+<!-- ============ 链接 ============ -->
+<section id="links">
+  <h2><span data-l="zh">开发者资源</span><span data-l="en">Developer resources</span></h2>
+  <div class="links">
+    <a href="https://github.com/codecloud-dev/agent-core" target="_blank" rel="noopener">GitHub</a>
+    <a href="https://github.com/codecloud-dev/agent-core/issues" target="_blank" rel="noopener">Issues</a>
+    <a href="https://www.npmjs.com/package/@mox/agent-core" target="_blank" rel="noopener">npm</a>
+  </div>
+</section>
+
+<footer>
+  <p data-l="zh">@mox/agent-core · MIT 许可证 · <a href="https://github.com/codecloud-dev/agent-core">GitHub</a></p>
+  <p data-l="en">@mox/agent-core · MIT License · <a href="https://github.com/codecloud-dev/agent-core">GitHub</a></p>
+</footer>
+</div>
+
+<script>
+(function(){
+  var KEY='agent-core-lang';
+  function setLang(l){
+    document.documentElement.setAttribute('data-lang', l);
+    document.documentElement.lang = (l==='zh' ? 'zh-CN' : 'en');
+    try{ localStorage.setItem(KEY, l); }catch(e){}
+    document.getElementById('btn-zh').classList.toggle('active', l==='zh');
+    document.getElementById('btn-en').classList.toggle('active', l==='en');
+  }
+  var url = new URLSearchParams(location.search).get('lang');
+  var saved = null; try{ saved = localStorage.getItem(KEY); }catch(e){}
+  var nav = (navigator.language||'zh').toLowerCase();
+  setLang(url || saved || (nav.indexOf('zh')===0 ? 'zh' : 'en'));
+  document.getElementById('btn-zh').onclick=function(){ setLang('zh'); };
+  document.getElementById('btn-en').onclick=function(){ setLang('en'); };
+  var btn=document.getElementById('copy-btn');
+  if(btn){ btn.onclick=function(){
+    var txt=document.getElementById('inst-cmd').textContent.trim();
+    navigator.clipboard&&navigator.clipboard.writeText(txt);
+    var zh=document.documentElement.getAttribute('data-lang')==='zh';
+    btn.textContent = zh ? '已复制 ✓' : 'Copied ✓';
+    setTimeout(function(){ btn.textContent = zh ? '复制 Copy' : 'Copy'; }, 1600);
+  };}
+})();
+</script>
+</body>
+</html>

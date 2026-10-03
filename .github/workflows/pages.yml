@@ -1,0 +1,42 @@
+name: Deploy docs to GitHub Pages
+
+# 部署双语文档站到 GitHub Pages：
+#   /  → 中/英一键切换的文档站（纯静态，无需构建）
+# 产出 https://codecloud-dev.github.io/agent-core/
+# 仅用仓库自带的 GITHUB_TOKEN，无需额外密钥。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble docs site
+        run: |
+          mkdir -p _site
+          cp docs/index.html _site/index.html
+          cp LICENSE _site/LICENSE
+          cp README.md _site/README.md
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

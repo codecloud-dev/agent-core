@@ -129,12 +129,12 @@ const today = '2026-10-03';
   ok('中危算变更', m.isMutationTier('mid') === true);
 
   console.log('\n[9] think / reflect 构造与校验');
-  const think = m.buildThink({ goal: 'g', assumptions: ['a'], checks: ['c'], perspectives: { 站长: 's', 用户: 'u', 安全: 'sec', 成本: 'c' } });
+  const think = m.buildThink({ goal: 'g', assumptions: ['a'], checks: ['c'], perspectives: { 决策者: 's', 用户: 'u', 安全: 'sec', 成本: 'c' } });
   eq('buildThink 类型', think.action, 'think');
   ok('isThink 识别', m.isThink(think));
   ok('isThink 拒绝非 think', m.isThink({ action: 'call' }) === false);
   eq('缺少视角检测出 0 个', m.missingPerspectives(think.reasoning).length, 0);
-  eq('缺视角被检出', m.missingPerspectives({ goal: 'g', assumptions: [], checks: [], perspectives: { 站长: '', 用户: 'u', 安全: 's', 成本: 'c' } }).length, 1);
+  eq('缺视角被检出', m.missingPerspectives({ goal: 'g', assumptions: [], checks: [], perspectives: { 决策者: '', 用户: 'u', 安全: 's', 成本: 'c' } }).length, 1);
   const refl = m.buildReflect({ verdict: '可行', side_effects: ['x'], better_way: 'y', confidence: 1.5 });
   eq('confidence 夹紧到 1', refl.confidence, 1);
   ok('isReflect 识别', m.isReflect(refl));

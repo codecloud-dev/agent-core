@@ -1,7 +1,7 @@
 {
   "name": "@mox/agent-core",
   "version": "0.1.0",
-  "description": "Runtime-agnostic core for autonomous ops agents: a metacognition protocol (think/reflect) plus tiered-autonomy guardrails (tool tiers, daily circuit-breaker, shadow mode).",
+  "description": "Runtime-agnostic core for building thinking, safely-autonomous AI agents: a metacognition protocol (think/reflect) plus tiered-autonomy guardrails (tool tiers, daily circuit-breaker, shadow mode). Platform-neutral, dependency-injected, fully tested.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -23,13 +23,15 @@
   },
   "keywords": [
     "agent",
+    "agentic",
     "metacognition",
+    "self-reflection",
     "guardrails",
     "llm",
     "autonomous",
-    "ops",
-    "sre",
     "ai",
+    "tool-use",
+    "human-in-the-loop",
     "typescript"
   ],
   "author": "codecloud-dev",

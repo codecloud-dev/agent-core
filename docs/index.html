@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>@mox/agent-core · 文档 / Docs</title>
-<meta name="description" content="@mox/agent-core — 元认知协议引擎 + 分级自主护栏，平台无关的运维 Agent 核心。">
+<meta name="description" content="@mox/agent-core — 元认知协议引擎 + 分级自主护栏，平台无关的通用 Agent 核心。">
 <style>
   :root{
     --bg:#07080c; --panel:rgba(255,255,255,.045); --panel-2:rgba(255,255,255,.07);
@@ -125,8 +125,8 @@
 <header>
   <div class="logo">@</div>
   <h1>@mox/agent-core</h1>
-  <p class="tag" data-l="zh">元认知协议引擎 + 分级自主护栏 —— 平台无关的运维 Agent 核心</p>
-  <p class="tag" data-l="en">Metacognition engine + tiered-autonomy guardrails — a runtime-agnostic core for ops agents</p>
+  <p class="tag" data-l="zh">元认知协议引擎 + 分级自主护栏 —— 平台无关的通用 Agent 核心</p>
+  <p class="tag" data-l="en">Metacognition engine + tiered-autonomy guardrails — a runtime-agnostic core for AI agents</p>
   <div class="badges">
     <span class="badge"><b>0</b> <span data-l="zh">平台绑定</span><span data-l="en">platform deps</span></span>
     <span class="badge"><b>47</b> <span data-l="zh">项测试</span><span data-l="en">tests</span></span>
@@ -147,8 +147,8 @@
 <!-- ============ 为什么 ============ -->
 <section id="why">
   <h2><span data-l="zh">这是什么</span><span data-l="en">What is this</span></h2>
-  <p data-l="zh">一个把「会思考的运维 Agent」里<b>真正难复用</b>的那部分抽出来的核心库：<strong>元认知协议</strong>（think / reflect 闭环）与<strong>分级自主护栏</strong>（工具分级、单日熔断、影子模式）。它不是 prompt 模板，而是<strong>可测试的架构</strong>——平台无关、依赖注入、47 项测试覆盖。</p>
-  <p data-l="en">The reusable core of a "thinking" ops agent: a <strong>metacognition protocol</strong> (think / reflect loop) and <strong>tiered-autonomy guardrails</strong> (tool tiers, daily circuit-breaker, shadow mode). Not a prompt template — a <strong>testable architecture</strong>: runtime-agnostic, dependency-injected, covered by 47 tests.</p>
+  <p data-l="zh">一个把「会思考的 Agent」里<b>真正难复用</b>的那部分抽出来的核心库：<strong>元认知协议</strong>（think / reflect 闭环）与<strong>分级自主护栏</strong>（工具分级、单日熔断、影子模式）。它不是 prompt 模板，而是<strong>可测试的架构</strong>——平台无关、依赖注入、47 项测试覆盖。运维、研发、数据分析、内容生产……任何需要「会思考 + 可控自治」的 Agent 都能用。</p>
+  <p data-l="en">The reusable core of a "thinking" AI agent: a <strong>metacognition protocol</strong> (think / reflect loop) and <strong>tiered-autonomy guardrails</strong> (tool tiers, daily circuit-breaker, shadow mode). Not a prompt template — a <strong>testable architecture</strong>: runtime-agnostic, dependency-injected, covered by 47 tests. For any agent that needs to think and act with controlled autonomy.</p>
 
   <div class="grid">
     <div class="card">
@@ -220,7 +220,7 @@ if (action.action === 'answer' &amp;&amp; gate.isPending) {
   <table>
     <thead><tr><th data-l="zh">视角</th><th data-l="en">Perspective</th><th data-l="zh">关注</th><th data-l="en">Focus</th></tr></thead>
     <tbody>
-      <tr><td><code>站长</code></td><td>Operator</td><td data-l="zh">影响、是否需立即修</td><td data-l="en">Impact, fix urgency</td></tr>
+      <tr><td><code>决策者</code></td><td>Decision-maker</td><td data-l="zh">影响、是否需立即处理</td><td data-l="en">Impact, urgency</td></tr>
       <tr><td><code>用户</code></td><td>User</td><td data-l="zh">数据丢失、功能异常</td><td data-l="en">Data loss, broken features</td></tr>
       <tr><td><code>安全</code></td><td>Security</td><td data-l="zh">是否暴露内部结构</td><td data-l="en">Internal exposure</td></tr>
       <tr><td><code>成本</code></td><td>Cost</td><td data-l="zh">重试/资源消耗</td><td data-l="en">Retries, resource spend</td></tr>

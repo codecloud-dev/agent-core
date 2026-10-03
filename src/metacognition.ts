@@ -14,7 +14,7 @@ export function normalizeActions(parsed: unknown): Action[] {
   return [];
 }
 
-const PERSPECTIVES: Perspective[] = ['站长', '用户', '安全', '成本'];
+const PERSPECTIVES: Perspective[] = ['决策者', '用户', '安全', '成本'];
 
 // 构造 think 动作（带四视角推理骨架）。
 export function buildThink(reasoning: ThinkReasoning, text?: string): ThinkAction {

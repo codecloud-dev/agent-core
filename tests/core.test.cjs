@@ -85,7 +85,9 @@ const today = '2026-10-03';
   await store3.setJSON('agent:gate', { date: today, count: 30, cap: 30 });
   const exec3 = makeExecutor();
   const logs3 = [];
-  const r1 = await m.guardExecute({ storage: store3, executor: exec3, logger: { log: (...a) => logs3.push(a) }, remediationTier: m.defaultRemediationTier }, 'disable_channel', { id: 5 });
+  // 注入可控时钟，使 guardExecute 用与 gate 日期（2026-10-03）一致的「今天」，
+  // 避免依赖真实系统时间导致「日期不匹配→额度被重置→熔断分支误判」。
+  const r1 = await m.guardExecute({ storage: store3, executor: exec3, logger: { log: (...a) => logs3.push(a) }, remediationTier: m.defaultRemediationTier, now: () => new Date(today + 'T00:00:00Z') }, 'disable_channel', { id: 5 });
   ok('熔断 blocked=true', r1.blocked === true, JSON.stringify(r1));
   ok('熔断不模拟、不成功执行', r1.simulated === false && r1.ok === false);
   ok('未调用执行器', exec3.calls.length === 0);

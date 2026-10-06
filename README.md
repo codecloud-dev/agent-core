@@ -7,7 +7,7 @@
   <a href="https://codecloud-dev.github.io/agent-core/">📖 文档站 Docs (中/EN 一键切换)</a>
 </p>
 
-> 设计理念：元认知不应该只是一句提示词，而应该是**真实跑在引擎里的架构**。于是推理链、执行后自检、工具风险分级、单日熔断、影子模式，都做成了可测试的结构化模块——平台无关，任何人都能 `npm i` 用在自己的 Agent 上。
+> 设计理念：元认知不应该只是一句提示词，而应该是**真实跑在引擎里的架构**。于是推理链、执行后自检、工具风险分级、单日熔断、影子模式，都做成了可测试的结构化模块——平台无关，任何人都能 `npm i`（即将发布）或源码引入，用在自己的 Agent 上。
 
 ## 它解决什么
 
@@ -17,6 +17,21 @@
 - **零平台绑定**：不依赖 Cloudflare/Node/Vercel。存储、动作执行器、日志都通过接口注入。附 `D1Storage` 适配器直接上 CF。
 
 ## 安装
+
+> ⚠️ **npm 包尚未发布**：`@mox/agent-core` 暂未推送到 npm registry（搜索返回 404）。
+> 当前请走下面的「方式一：源码安装」；npm 安装方式将在正式发布后启用（即将发布）。
+
+### 方式一：源码安装（当前可用）
+
+```bash
+git clone https://github.com/codecloud-dev/agent-core.git
+cd agent-core
+npm install                 # 仅拉取 esbuild 等开发依赖
+# 打包成单文件（无原生依赖，可直接 require，也可上 Cloudflare Workers 等边缘运行时）
+npx esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs
+```
+
+### 方式二：npm 安装（即将发布）
 
 ```bash
 npm i @mox/agent-core
@@ -146,6 +161,16 @@ const storage = new D1Storage(env.DB, { table: 'agent_kv' }); // 用你自己的
 ```bash
 npm test      # esbuild 打包后用内存 Storage mock 跑，47 项覆盖全路径
 ```
+
+## 支持我们
+
+如果这个核心帮到了你，欢迎用以下方式支持项目持续维护：
+
+- 💛 **爱发电（国内可用，首选）**：<https://afdian.com/a/cloudharbor> —— 国内可直接收款，点个赞助就是最大鼓励。
+- ⭐ 在 GitHub 上 **Star** 本仓库，让更多人发现「可注入、可测试的元认知护栏」。
+- 🐛 遇到 bug 或想提需求，欢迎开 **Issue** 或 **PR**。
+
+> 注：GitHub Sponsors 暂不支持中国大陆地区（官方支持约 103 个地区，不含大陆，且需开启两步验证），故国内用户请走上面的爱发电通道。
 
 ## 许可
 

@@ -2,4 +2,6 @@ node_modules/
 dist/
 *.tgz
 _bundle.cjs
+*.log
 .DS_Store
+agent-core.kv.json

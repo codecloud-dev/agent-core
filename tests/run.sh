@@ -9,5 +9,6 @@ npx esbuild src/index.ts --bundle --format=cjs --platform=node --outfile=_bundle
 echo
 echo "========== @mox/agent-core 单元测试 =========="
 node tests/core.test.cjs
+node tests/adapters.test.cjs
 
 rm -f _bundle.cjs

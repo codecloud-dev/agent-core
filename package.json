@@ -1,7 +1,7 @@
 {
   "name": "@mox/agent-core",
-  "version": "0.1.0",
-  "description": "Runtime-agnostic core for building thinking, safely-autonomous AI agents: a metacognition protocol (think/reflect) plus tiered-autonomy guardrails (tool tiers, daily circuit-breaker, shadow mode). Platform-neutral, dependency-injected, fully tested.",
+  "version": "1.0.0",
+  "description": "Runtime-agnostic core for building thinking, safely-autonomous AI agents: a metacognition protocol (think/reflect) plus tiered-autonomy guardrails (tool tiers, daily circuit-breaker, shadow mode). Ships MemoryStorage / NodeStorage / D1Storage adapters. Platform-neutral, dependency-injected, fully tested.",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -19,7 +19,8 @@
     "build:cjs": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --log-level=error",
     "build:esm": "esbuild src/index.ts --bundle --platform=node --format=esm --outfile=dist/index.js --log-level=error",
     "build:types": "tsc -p tsconfig.json",
-    "test": "bash tests/run.sh"
+    "test": "bash tests/run.sh",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "agent",
@@ -50,7 +51,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "sideEffects": false,
   "devDependencies": {
+    "@types/node": "^20.11.0",
     "esbuild": "^0.21.0",
     "typescript": "^5.4.0"
   }

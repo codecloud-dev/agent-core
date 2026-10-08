@@ -1,5 +1,15 @@
 # @mox/agent-core
 
+<p align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-8a7bff" alt="version">
+  <img src="https://img.shields.io/badge/npm-publish%20pending-ffb000" alt="npm">
+  <img src="https://img.shields.io/badge/license-MIT-37d5d3" alt="license">
+  <img src="https://img.shields.io/badge/language-TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
+  <img src="https://img.shields.io/badge/runtime-any%20platform-2088FF" alt="platform-agnostic">
+  <img src="https://img.shields.io/badge/docs-中%2FEN%20switch-ff7ac3" alt="docs">
+</p>
+
+
 > **通用 Agent 核心** —— 把「元认知协议引擎」与「分级自主护栏」从具体项目里抽出来，做成
 > **平台无关、可注入、可测试**的通用代码。适用于运维、研发、数据分析、内容生产、客服、自动化……
 > 任何需要「会思考 + 可控自治」的 Agent 场景。
@@ -13,7 +23,24 @@
 
 ---
 
-## 它解决什么
+<details>
+<summary>📑 目录 · Contents</summary>
+
+- [🎯 它解决什么](#它解决什么)
+- [📦 安装](#安装)
+- [🚀 快速开始](#快速开始)
+- [⚙️ 核心概念](#核心概念)
+- [🔹 运行时抽象（注入式）](#运行时抽象注入式)
+- [📚 完整 API 参考](#完整-api-参考)
+- [🗺️ 进度表 / 路线图](#进度表-路线图)
+- [❓ 常见问题（FAQ）](#常见问题faq)
+- [🧪 测试](#测试)
+- [💖 支持我们](#支持我们)
+- [📜 许可](#许可)
+
+</details>
+
+## 🎯 它解决什么
 
 - **元认知可外显、可强制**：`think`（推理卡）/ `reflect`（自检卡）是结构化协议动作，引擎能渲染给人类看，并强制"变更后必须先 reflect 才能收尾"。
 - **一次吐多个动作不再丢**：模型常把 `think` 和 `call` 打包成 `[{think},{call}]`，普通实现会整体落入兜底吞掉 `call`，导致"只思考不干事"。`normalizeActions` 把单对象/数组都归一化成动作数组。
@@ -22,9 +49,9 @@
 
 ---
 
-## 安装
+## 📦 安装
 
-### 方式一：源码安装（当前始终可用）
+### 📦 方式一：源码安装（当前始终可用）
 
 ```bash
 git clone https://github.com/codecloud-dev/agent-core.git
@@ -34,7 +61,7 @@ npm install                 # 仅拉取 esbuild / typescript 等开发依赖
 npm run build
 ```
 
-### 方式二：npm 安装（v1.0.0 起已就绪）
+### 📦 方式二：npm 安装（v1.0.0 起已就绪）
 
 ```bash
 npm i @mox/agent-core
@@ -51,9 +78,9 @@ esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js
 
 ---
 
-## 快速开始
+## 🚀 快速开始
 
-### 1. 元认知：归一化动作 + 闭环门
+### 🔹 1. 元认知：归一化动作 + 闭环门
 
 ```ts
 import { normalizeActions, ReflectGate, buildThink, buildReflect } from '@mox/agent-core';
@@ -71,7 +98,7 @@ for (const a of actions) {
 if (gate.isPending) reject('请先 reflect 再收尾');
 ```
 
-### 2. 分级护栏：让自主执行可控
+### 🔹 2. 分级护栏：让自主执行可控
 
 ```ts
 import { guardExecute, defaultRemediationTier, isShadowMode } from '@mox/agent-core';
@@ -106,9 +133,9 @@ npx tsx examples/quickstart.ts
 
 ---
 
-## 核心概念
+## ⚙️ 核心概念
 
-### 元认知动作协议
+### 🔹 元认知动作协议
 
 | 动作 | 含义 | 引擎职责 |
 |------|------|----------|
@@ -119,7 +146,7 @@ npx tsx examples/quickstart.ts
 
 `think` 的 `perspectives` 固定四视角：`决策者 / 用户 / 安全 / 成本`——逼 Agent 每次决策都从这四个立场过一遍（拍板的人/受众/风险/资源）。可用 `missingPerspectives()` 校验四视角是否齐全。
 
-### 工具风险分级
+### 🔹 工具风险分级
 
 ```ts
 type ToolTier = 'low' | 'mid' | 'high';
@@ -130,7 +157,7 @@ type ToolTier = 'low' | 'mid' | 'high';
 
 `defaultToolTier` / `defaultRemediationTier` 是示例策略，接入方**必须按自己业务覆盖**。
 
-### 护栏三件套
+### 🔹 护栏三件套
 
 1. **单日自动变更熔断**（`checkDailyGate`/`bumpDailyGate`）：防失控、防自激循环。状态存 `Storage`，跨请求持久。
 2. **影子模式**（`isShadowMode`/`setShadowMode`）：开启后中危动作只模拟上报不真改，先观察 Agent 决策质量一周再放开。
@@ -138,7 +165,7 @@ type ToolTier = 'low' | 'mid' | 'high';
 
 ---
 
-## 运行时抽象（注入式）
+## 🔹 运行时抽象（注入式）
 
 核心不 import 任何平台 API。外部依赖通过接口注入：
 
@@ -155,7 +182,7 @@ interface ActionLogger {      // 护栏关键分支回调（可选）
 }
 ```
 
-### 内置适配器
+### 🔹 内置适配器
 
 | 适配器 | 导入 | 用途 | 依赖 |
 |--------|------|------|------|
@@ -176,7 +203,7 @@ const b = new NodeStorage({ file: '/var/lib/agent/kv.json' });
 const c = new D1Storage(env.DB, { table: 'agent_kv' });
 ```
 
-### 写自己的 Storage 适配器
+### 🔹 写自己的 Storage 适配器
 
 核心只认 `Storage` 接口。以 Redis 为例（完整模板见 `examples/custom-adapter.ts`）：
 
@@ -197,9 +224,9 @@ class RedisStorage implements Storage {
 
 ---
 
-## 完整 API 参考
+## 📚 完整 API 参考
 
-### 元认知（`metacognition`）
+### 🔹 元认知（`metacognition`）
 
 | 导出 | 签名 | 说明 |
 |------|------|------|
@@ -211,7 +238,7 @@ class RedisStorage implements Storage {
 | `ReflectGate` | `class` | 闭环门：`afterMutation()` / `onReflect()` / `isPending` / `reset()` |
 | `isMutationTier` | `(tier) => boolean` | `low` 之外都算变更（需反思闭环） |
 
-### 护栏（`guardrails`）
+### 🔹 护栏（`guardrails`）
 
 | 导出 | 签名 | 说明 |
 |------|------|------|
@@ -226,18 +253,18 @@ class RedisStorage implements Storage {
 
 `GuardResult`：`{ ok, summary, simulated, blocked?, data }`。
 
-### 类型（`types`）
+### 🔤 类型（`types`）
 
 `ActionType`、`Action`、`ThinkAction`、`ReflectAction`、`CallAction`、`AnswerAction`、
 `ThinkReasoning`、`Perspective`、`ReflectVerdict`、`Storage`、`ActionExecutor`、`ActionLogger`。
 
-### 适配器（`adapters`）
+### 🔹 适配器（`adapters`）
 
 `D1Storage` / `D1Like` / `D1StorageOptions` · `MemoryStorage` · `NodeStorage` / `NodeStorageOptions`。
 
 ---
 
-## 进度表 / 路线图
+## 🗺️ 进度表 / 路线图
 
 | 模块 | 状态 | 说明 |
 |------|------|------|
@@ -254,7 +281,7 @@ class RedisStorage implements Storage {
 
 ---
 
-## 常见问题（FAQ）
+## ❓ 常见问题（FAQ）
 
 **Q：真的能上 Cloudflare Workers 吗？**
 能。`NodeStorage` 只在方法被调用时才动态 `import('node:fs')`，不用它就不会拉入 Node 依赖；`D1Storage` 走 `env.DB`。打包后无原生依赖。
@@ -270,7 +297,7 @@ class RedisStorage implements Storage {
 
 ---
 
-## 测试
+## 🧪 测试
 
 ```bash
 npm test      # esbuild 打包后用内存 Storage mock 跑，全部覆盖全路径
@@ -280,7 +307,7 @@ npm test      # esbuild 打包后用内存 Storage mock 跑，全部覆盖全路
 
 ---
 
-## 支持我们
+## 💖 支持我们
 
 如果这个核心帮到了你，欢迎用以下方式支持项目持续维护：
 
@@ -290,6 +317,6 @@ npm test      # esbuild 打包后用内存 Storage mock 跑，全部覆盖全路
 
 > 注：GitHub Sponsors 暂不支持中国大陆地区（官方支持约 103 个地区，不含大陆，且需开启两步验证），故国内用户请走上面的爱发电通道。
 
-## 许可
+## 📜 许可
 
 MIT © mox / codecloud-dev

@@ -29,6 +29,7 @@
 - [🎯 它解决什么](#它解决什么)
 - [📦 安装](#安装)
 - [🚀 快速开始](#快速开始)
+- [🛠️ 多种使用方法](#多种使用方法)
 - [⚙️ 核心概念](#核心概念)
 - [🔹 运行时抽象（注入式）](#运行时抽象注入式)
 - [📚 完整 API 参考](#完整-api-参考)
@@ -130,6 +131,103 @@ else if (res.ok)     console.log('已执行：', res.summary);
 ```bash
 npx tsx examples/quickstart.ts
 ```
+
+---
+
+## 🛠️ 多种使用方法（从引入到上线）
+
+同一个核心，按你的运行环境选一种接法即可——下面每一种都给可直接抄的片段。
+
+| 场景 | 引入方式 | 存储适配器 | 关键点 |
+|------|----------|------------|--------|
+| Node 服务 / CLI | `npm i @mox/agent-core`（ESM）或 `require`（CJS） | `NodeStorage` | 文件持久化，零原生依赖 |
+| 边缘 / Cloudflare Workers | esbuild 打包成单文件 ESM | `D1Storage` | 无原生依赖，直接上 Workers |
+| 单元测试 / 本地 | 源码 `npx tsx examples/quickstart.ts` | `MemoryStorage` | 零依赖 Mock，跑通即验证 |
+| Web 框架（Hono / Express） | 作为中间件注入 | 任意 | 请求级隔离，每个请求一个新 Storage |
+
+### 🔹 1. Node.js：ESM 与 CJS 两种引入
+
+```ts
+// ESM（推荐，package.json 设 "type": "module"）
+import { normalizeActions, guardExecute, MemoryStorage } from '@mox/agent-core';
+
+// CJS
+// const { guardExecute, MemoryStorage } = require('@mox/agent-core');
+```
+
+### 🔹 2. 边缘运行时：Cloudflare Workers / 无服务器
+
+核心无原生依赖，`NodeStorage` 只在方法被调用时才 `import('node:fs')`，Workers 里别用它即可，不影响打包。
+
+```ts
+// worker.ts
+import { guardExecute, D1Storage, defaultRemediationTier } from '@mox/agent-core';
+
+export default {
+  async fetch(_req: Request, env: { DB: unknown }) {
+    const storage = new D1Storage(env.DB as any, { table: 'agent_kv' });
+    const res = await guardExecute(
+      { storage, executor: myExecutor, remediationTier: defaultRemediationTier },
+      'disable_channel', { id: 7 },
+    );
+    return new Response(JSON.stringify(res));
+  },
+};
+```
+
+```bash
+# 打包（产物可直接部署到 Workers / 边缘）
+esbuild worker.ts --bundle --format=esm --outfile=dist/worker.js
+```
+
+### 🔹 3. 单元测试：注入 Mock，不碰真实后端
+
+`MemoryStorage` 自带 `clear()`，每个用例前清一次即可隔离；用假 `executor` 断言护栏行为：
+
+```ts
+import { guardExecute, MemoryStorage, setShadowMode, defaultRemediationTier } from '@mox/agent-core';
+
+const fakeExec = { async execute() { return { ok: true, summary: 'mock' }; } };
+const storage = new MemoryStorage();
+
+// 单日额度耗尽 → blocked（不会真执行）
+const g1 = await guardExecute({ storage, executor: fakeExec, remediationTier: defaultRemediationTier }, 'add_credits', { uid: 1, amount: 10 });
+console.log(g1.blocked);   // true
+
+// 开启影子模式 → 中危只模拟上报
+await setShadowMode(storage, true);
+const g2 = await guardExecute({ storage, executor: fakeExec, remediationTier: defaultRemediationTier }, 'add_credits', { uid: 1, amount: 10 });
+console.log(g2.simulated); // true
+storage.clear();
+```
+
+### 🔹 4. 接入 Web 框架（以 Hono 为例）
+
+```ts
+import { Hono } from 'hono';
+import { guardExecute, D1Storage, defaultRemediationTier } from '@mox/agent-core';
+
+const app = new Hono<{ Bindings: { DB: any } }>();
+app.post('/agent/act', async (c) => {
+  const storage = new D1Storage(c.env.DB, { table: 'agent_kv' });
+  const res = await guardExecute(
+    { storage, executor: myExecutor, remediationTier: defaultRemediationTier },
+    c.req.query('tool')!, await c.req.json(),
+  );
+  return c.json(res);
+});
+// Express / Fastify 同理：把 c.env.DB 换成 req.app.locals.db 即可
+```
+
+### 🔹 5. 端到端：一个「客服补偿」Agent 从零搭
+
+把上面几块串起来就是生产用法：模型一次性吐多个动作 → `normalizeActions` 归一化 → 变更类动作逐个走 `guardExecute` 护栏 → `ReflectGate` 强制「先 reflect 再收尾」→ `answer`。完整可运行代码见仓库 [`examples/quickstart.ts`](examples/quickstart.ts)，直接跑：
+
+```bash
+npx tsx examples/quickstart.ts
+```
+
+> 想换存储后端（Redis / Prisma / DynamoDB）？照 [`examples/custom-adapter.ts`](examples/custom-adapter.ts) 的 `RedisStorage` 模板实现 `Storage` 接口的 `getJSON` / `setJSON` 两个方法即可，核心一行不用改。
 
 ---
 

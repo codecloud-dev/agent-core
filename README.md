@@ -19,6 +19,10 @@
   <a href="https://codecloud-dev.github.io/agent-core/">📖 文档站 Docs (中/EN 一键切换)</a>
 </p>
 
+<p>
+  <b>⭐ 如果 @mox/agent-core 对你有用,欢迎点个 <a href="https://github.com/codecloud-dev/agent-core">Star</a> —— 它能让更多开发者用上会思考、可控自治的 Agent 核心!</b>
+</p>
+
 > 设计理念：元认知不应该只是一句提示词，而应该是**真实跑在引擎里的架构**。于是推理链、执行后自检、工具风险分级、单日熔断、影子模式，都做成了可测试的结构化模块——平台无关，任何人都能 `npm i` 或源码引入，用在自己的 Agent 上。
 
 ---

@@ -16,6 +16,7 @@
 
 <p>
   <a href="README.md">中文</a> ·
+  <a href="README.en.md">English</a> ·
   <a href="https://codecloud-dev.github.io/agent-core/">📖 文档站 Docs (中/EN 一键切换)</a>
 </p>
 

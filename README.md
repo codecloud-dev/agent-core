@@ -19,6 +19,8 @@
   <a href="https://codecloud-dev.github.io/agent-core/">📖 文档站 Docs (中/EN 一键切换)</a>
 </p>
 
+<p align="center"><img src="assets/demo.svg" width="760" alt="agent-core 元认知环动图：核心引擎驱动 think → act → reflect 循环，分级自主护栏可控"></p>
+
 <p>
   <b>⭐ 如果 @mox/agent-core 对你有用,欢迎点个 <a href="https://github.com/codecloud-dev/agent-core">Star</a> —— 它能让更多开发者用上会思考、可控自治的 Agent 核心!</b>
 </p>

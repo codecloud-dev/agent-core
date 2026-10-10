@@ -435,6 +435,8 @@ npm test      # esbuild 打包后用内存 Storage mock 跑，全部覆盖全路
 
 > 注：GitHub Sponsors 暂不支持中国大陆地区（官方支持约 103 个地区，不含大陆，且需开启两步验证），故国内用户请走上面的爱发电通道。
 
+<p align="center"><img src="assets/afdian-qr.jpg" width="200" alt="爱发电赞助码"></p>
+
 ## 📜 许可
 
 MIT © mox / codecloud-dev

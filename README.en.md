@@ -431,6 +431,8 @@ If this core helps you, support continued maintenance in any of these ways:
 
 > Note: GitHub Sponsors is not available in mainland China (officially ~103 regions, excludes CN, and requires 2FA), so CN users please use the AfDian link above.
 
+<p align="center"><img src="assets/afdian-qr.jpg" width="200" alt="Afdian sponsorship QR code"></p>
+
 ## 📜 License
 
 MIT © mox / codecloud-dev

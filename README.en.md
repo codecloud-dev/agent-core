@@ -21,6 +21,19 @@
 
 <p>
   <b>⭐ If @mox/agent-core is useful to you, please give it a <a href="https://github.com/codecloud-dev/agent-core">Star</a> — it helps more developers adopt a thinking, controllable-autonomy Agent core!</b>
+
+
+
+## 🐛 Welcome to roast me
+
+> This is an early-stage project — **bugs exist, and probably plenty of them.** I'm not pretending it's perfect.
+> Every pitfall you hit and every gripe you have is a chance to help make it better.
+
+- 💥 Crashed / black screen / won't run? → [File a bug report](https://github.com/codecloud-dev/agent-core/issues)
+- 💡 Want a feature? → [Open a feature request](https://github.com/codecloud-dev/agent-core/issues)
+- 🗯️ Just want to rant or nitpick? → Issues are welcome too, label it whatever 😄
+
+I read every issue and fix what I can, fast. Let's grow this from "runs" to "delightful" 💪
 </p>
 
 > Design philosophy: metacognition shouldn't be just a prompt — it should be **real architecture running inside the engine**. So reasoning chains, post-action self-checks, tool risk tiers, daily circuit breakers, and shadow mode are all built as testable, structured modules — platform-agnostic, usable by anyone via `npm i` or source import.

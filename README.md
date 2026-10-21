@@ -1,5 +1,8 @@
 > **🌐 主仓库在 GitHub** — [`codecloud-dev/agent-core`](https://github.com/codecloud-dev/agent-core) 是唯一主源：Issue、Pull Request、功能讨论请统一提交到 GitHub。[Gitee 镜像](https://gitee.com/thousand-code-crafts/agent-core) 仅供国内高速只读访问，每小时从 GitHub 自动同步。
 
+<p align="center"><img src="assets/logo.svg" width="128" alt="MoX"/></p>
+
+
 # @mox/agent-core
 
 <p align="center">

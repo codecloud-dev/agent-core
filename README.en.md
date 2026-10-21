@@ -1,3 +1,5 @@
+> **🌐 Canonical repository is on GitHub** — [`codecloud-dev/agent-core`](https://github.com/codecloud-dev/agent-core) is the single source of truth: please file all issues and pull requests there. The [Gitee mirror](https://gitee.com/thousand-code-crafts/agent-core) is a read-only copy synced hourly for faster access in mainland China.
+
 # @mox/agent-core
 
 <p align="center">

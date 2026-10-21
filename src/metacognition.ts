@@ -7,10 +7,16 @@ import type { Action, ThinkAction, ReflectAction, ThinkReasoning, Perspective } 
 // 模型偶尔把 think 与随后的 call 打包成 [{think},{call}]；不支持数组会让数组整体
 // 既非已知 action 也非原子对象，落入兜底吞掉后续动作（如 call），导致「只思考不干事」。
 // 空 / 非法输入返回 []（交给引擎走兜底）。
+const VALID_ACTIONS = new Set<Action['action']>(['think', 'reflect', 'call', 'answer']);
+
+function isActionLike(a: unknown): a is Action {
+  return !!a && typeof a === 'object' && VALID_ACTIONS.has((a as { action?: unknown }).action as Action['action']);
+}
+
 export function normalizeActions(parsed: unknown): Action[] {
   if (parsed == null) return [];
-  if (Array.isArray(parsed)) return parsed.filter((a) => a != null && typeof a === 'object') as Action[];
-  if (typeof parsed === 'object') return [parsed as Action];
+  if (Array.isArray(parsed)) return parsed.filter(isActionLike);
+  if (typeof parsed === 'object') return isActionLike(parsed) ? [parsed as Action] : [];
   return [];
 }
 

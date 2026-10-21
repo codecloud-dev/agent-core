@@ -18,7 +18,7 @@ export class NodeStorage implements Storage {
   private file: string;
   private autosync: boolean;
   private cache = new Map<string, string>();
-  private loaded = false;
+  private loading: Promise<void> | null = null;
   private writing: Promise<void> | null = null;
 
   constructor(opts: NodeStorageOptions = {}) {
@@ -36,28 +36,39 @@ export class NodeStorage implements Storage {
     return i >= 0 ? f.slice(0, i) : '.';
   }
 
-  private async ensureLoaded(): Promise<void> {
-    if (this.loaded) return;
-    try {
-      const mod = await this.fsMod();
-      const raw = await mod.promises.readFile(this.file, 'utf8');
-      const obj = JSON.parse(raw) as Record<string, string>;
-      this.cache = new Map(Object.entries(obj));
-    } catch {
-      this.cache = new Map();
+  // 并发首次调用只允许一次真实加载：否则后完成的加载会把先完成的
+  // setJSON 刚写入 cache 的值覆盖回文件旧内容，造成静默丢数据。
+  private ensureLoaded(): Promise<void> {
+    if (!this.loading) {
+      this.loading = (async () => {
+        try {
+          const mod = await this.fsMod();
+          const raw = await mod.promises.readFile(this.file, 'utf8');
+          const obj = JSON.parse(raw) as Record<string, string>;
+          this.cache = new Map(Object.entries(obj));
+        } catch {
+          this.cache = new Map();
+        }
+      })();
     }
-    this.loaded = true;
+    return this.loading;
   }
 
   private async persist(): Promise<void> {
     const mod = await this.fsMod();
     const obj = Object.fromEntries(this.cache);
-    // 串行化写，避免并发覆盖
-    this.writing = (this.writing ?? Promise.resolve()).then(async () => {
+    // 串行化写，避免并发覆盖。单次写失败只让当次调用报错，
+    // 并把链重置，避免 rejected promise 毒化后续所有写入。
+    const prev = this.writing ?? Promise.resolve();
+    const next = prev.then(async () => {
       await mod.promises.mkdir(this.dirOf(this.file), { recursive: true });
       await mod.promises.writeFile(this.file, JSON.stringify(obj, null, 2), 'utf8');
     });
-    return this.writing;
+    this.writing = next;
+    next.catch(() => {
+      if (this.writing === next) this.writing = null;
+    });
+    return next;
   }
 
   async getJSON<T = unknown>(key: string): Promise<T | null> {

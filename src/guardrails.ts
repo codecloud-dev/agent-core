@@ -62,6 +62,22 @@ function freshGate(cap: number, t: string): GateState {
   return { date: t, count: 0, cap };
 }
 
+// 存储里的 gate 可能是脏数据（损坏 / 被外部改写 / 旧版本格式），
+// 不校验会让 count/cap 参与比较时产生 NaN 或字符串运算，导致熔失效。
+function readGate(raw: unknown, cap: number, t: string): GateState {
+  if (raw && typeof raw === 'object') {
+    const g = raw as Partial<GateState>;
+    if (
+      g.date === t &&
+      typeof g.count === 'number' && Number.isFinite(g.count) &&
+      typeof g.cap === 'number' && Number.isFinite(g.cap)
+    ) {
+      return { date: g.date, count: g.count, cap: g.cap };
+    }
+  }
+  return freshGate(cap, t);
+}
+
 export async function checkDailyGate(
   deps: BreakerDeps,
   today?: string,
@@ -70,7 +86,7 @@ export async function checkDailyGate(
   const cap = deps.defaultCap ?? 30;
   const t = today || todayStr(deps.now);
   const raw = await deps.storage.getJSON<GateState>(key);
-  const state: GateState = !raw || raw.date !== t ? freshGate(cap, t) : raw;
+  const state = readGate(raw, cap, t);
   return { blocked: state.count >= state.cap, remain: Math.max(0, state.cap - state.count), cap: state.cap };
 }
 
@@ -79,7 +95,7 @@ export async function bumpDailyGate(deps: BreakerDeps, today?: string): Promise<
   const cap = deps.defaultCap ?? 30;
   const t = today || todayStr(deps.now);
   const raw = await deps.storage.getJSON<GateState>(key);
-  const state: GateState = !raw || raw.date !== t ? freshGate(cap, t) : raw;
+  const state = readGate(raw, cap, t);
   state.count += 1;
   await deps.storage.setJSON(key, state);
 }
@@ -108,6 +124,19 @@ export interface GuardResult {
   data: unknown;
 }
 
+// 可观测回调（logger）失败不应中断护栏主流程——否则一次日志故障
+// 会让熔断拦截 / 影子模拟分支抛错，调用方拿不到结构化结果。
+function safeLog(deps: GuardDeps, level: string, kind: string, action: string, detail: string): void {
+  try {
+    const r = deps.logger?.log?.(level, kind, action, detail);
+    if (r && typeof (r as Promise<void>).catch === 'function') {
+      (r as Promise<void>).catch(() => {});
+    }
+  } catch {
+    // 忽略日志回调异常
+  }
+}
+
 // ① 单日自动变更熔断：超上限即停并告警。
 // ② 影子模式：中危动作只模拟上报、不真改。
 // ③ 仅中危成功执行计入额度；低危自由自动；高危动作根本到不了执行器（由上层批准门拦截）。
@@ -121,7 +150,7 @@ export async function guardExecute(
 
   const gate = await checkDailyGate(deps);
   if (gate.blocked) {
-    deps.logger?.log?.('guard', 'agent_guard_block', action, JSON.stringify({ cap: gate.cap, note: '单日自动变更额度耗尽，已暂停自动执行' }));
+    safeLog(deps, 'guard', 'agent_guard_block', action, JSON.stringify({ cap: gate.cap, note: '单日自动变更额度耗尽，已暂停自动执行' }));
     return {
       ok: false,
       summary: `今日自动变更额度已用尽（上限 ${gate.cap}），已暂停自动执行并告警——请人工确认或次日再放开`,
@@ -133,7 +162,7 @@ export async function guardExecute(
 
   const shadow = await isShadowMode(deps.storage);
   if (shadow && tier === 'mid') {
-    deps.logger?.log?.('guard', 'agent_shadow_sim', action, JSON.stringify({ action, args, note: '影子模式：仅模拟，未执行' }));
+    safeLog(deps, 'guard', 'agent_shadow_sim', action, JSON.stringify({ action, args, note: '影子模式：仅模拟，未执行' }));
     return {
       ok: true,
       summary: `【影子模式·仅模拟】拟执行 ${action}（未真实改动），预期影响已记录待你复核`,
@@ -142,7 +171,15 @@ export async function guardExecute(
     };
   }
 
-  const r = await deps.executor.execute(action, args);
+  // 执行器抛错时转为结构化失败结果（与 ActionExecutor 契约的 {ok:false} 对齐），
+  // 不让异常穿透护栏冒泡给调用方。
+  let r: Awaited<ReturnType<ActionExecutor['execute']>>;
+  try {
+    r = await deps.executor.execute(action, args);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, summary: `执行 ${action} 时出错：${msg}`, simulated: false, data: null };
+  }
   if (r.ok && tier !== 'low') await bumpDailyGate(deps);
   return { ok: r.ok, summary: r.summary, simulated: false, data: r.data ?? null };
 }

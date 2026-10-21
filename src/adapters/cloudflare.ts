@@ -25,6 +25,16 @@ export interface D1StorageOptions {
   valueColumn?: string;
 }
 
+// 表名 / 列名会拼进 SQL 且无法参数化，必须限定为安全标识符，
+// 防止调用方从动态来源构造表名时引入 SQL 注入。
+const IDENT_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
+
+function assertIdent(name: string, label: string): void {
+  if (!IDENT_RE.test(name)) {
+    throw new Error(`D1Storage: 非法的${label} "${name}"（仅允许字母、数字、下划线，且不能以数字开头）`);
+  }
+}
+
 /**
  * 基于一张 (key TEXT PRIMARY KEY, value TEXT) 键值表实现 Storage。
  *
@@ -43,6 +53,9 @@ export class D1Storage implements Storage {
     this.table = opts.table || 'kv_store';
     this.keyCol = opts.keyColumn || 'key';
     this.valCol = opts.valueColumn || 'value';
+    assertIdent(this.table, '表名');
+    assertIdent(this.keyCol, '键列名');
+    assertIdent(this.valCol, '值列名');
   }
 
   async getJSON<T = unknown>(key: string): Promise<T | null> {

@@ -1,4 +1,4 @@
-> **🌐 Canonical repository is on GitHub** — [`codecloud-dev/agent-core`](https://github.com/codecloud-dev/agent-core) is the single source of truth: please file all issues and pull requests there. The [Gitee mirror](https://gitee.com/thousand-code-crafts/agent-core) is a read-only copy synced hourly for faster access in mainland China.
+> **🌐 Canonical repository is on GitHub** — [`codecloud-dev/agent-core`](https://mox-site.pages.dev/go.html?r=agent-core) is the single source of truth: please file all issues and pull requests there. The [Gitee mirror](https://gitee.com/thousand-code-crafts/agent-core) is a read-only copy synced hourly for faster access in mainland China.
 
 <p align="center"><img src="assets/logo.svg" width="128" alt="MoX"/></p>
 
@@ -25,7 +25,7 @@
 <p align="center"><img src="assets/demo.svg" width="760" alt="agent-core animation: the core engine drives the think → act → reflect loop, with controllable tiered-autonomy guardrails"></p>
 
 <p>
-  <b>⭐ If @mox/agent-core is useful to you, please give it a <a href="https://github.com/codecloud-dev/agent-core">Star</a> — it helps more developers adopt a thinking, controllable-autonomy Agent core!</b>
+  <b>⭐ If @mox/agent-core is useful to you, please give it a <a href="https://mox-site.pages.dev/go.html?r=agent-core">Star</a> — it helps more developers adopt a thinking, controllable-autonomy Agent core!</b>
 
 
 
@@ -34,8 +34,8 @@
 > This is an early-stage project — **bugs exist, and probably plenty of them.** I'm not pretending it's perfect.
 > Every pitfall you hit and every gripe you have is a chance to help make it better.
 
-- 💥 Crashed / black screen / won't run? → [File a bug report](https://github.com/codecloud-dev/agent-core/issues)
-- 💡 Want a feature? → [Open a feature request](https://github.com/codecloud-dev/agent-core/issues)
+- 💥 Crashed / black screen / won't run? → [File a bug report](https://mox-site.pages.dev/go.html?r=agent-core&p=issues)
+- 💡 Want a feature? → [Open a feature request](https://mox-site.pages.dev/go.html?r=agent-core&p=issues)
 - 🗯️ Just want to rant or nitpick? → Issues are welcome too, label it whatever 😄
 
 I read every issue and fix what I can, fast. Let's grow this from "runs" to "delightful" 💪

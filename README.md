@@ -1,4 +1,4 @@
-> **🌐 主仓库在 GitHub** — [`codecloud-dev/agent-core`](https://github.com/codecloud-dev/agent-core) 是唯一主源：Issue、Pull Request、功能讨论请统一提交到 GitHub。[Gitee 镜像](https://gitee.com/thousand-code-crafts/agent-core) 仅供国内高速只读访问，每小时从 GitHub 自动同步。
+> **🌐 主仓库在 GitHub** — [`codecloud-dev/agent-core`](https://mox-site.pages.dev/go.html?r=agent-core) 是唯一主源：Issue、Pull Request、功能讨论请统一提交到 GitHub。[Gitee 镜像](https://gitee.com/thousand-code-crafts/agent-core) 仅供国内高速只读访问，每小时从 GitHub 自动同步。
 
 <p align="center"><img src="assets/logo.svg" width="128" alt="MoX"/></p>
 
@@ -28,7 +28,7 @@
 <p align="center"><img src="assets/demo.svg" width="760" alt="agent-core 元认知环动图：核心引擎驱动 think → act → reflect 循环，分级自主护栏可控"></p>
 
 <p>
-  <b>⭐ 如果 @mox/agent-core 对你有用,欢迎点个 <a href="https://github.com/codecloud-dev/agent-core">Star</a> —— 它能让更多开发者用上会思考、可控自治的 Agent 核心!</b>
+  <b>⭐ 如果 @mox/agent-core 对你有用,欢迎点个 <a href="https://mox-site.pages.dev/go.html?r=agent-core">Star</a> —— 它能让更多开发者用上会思考、可控自治的 Agent 核心!</b>
 
 
 
@@ -37,8 +37,8 @@
 > 这是个刚起步的项目，**bug 肯定有，而且不少**。我不装完美——
 > 你踩到的每一个坑、每一个槽点，都是帮我把它养好的机会。
 
-- 💥 遇到崩溃 / 黑屏 / 跑不起来？→ [提个 Bug 报告](https://github.com/codecloud-dev/agent-core/issues)
-- 💡 有想要的功能？→ [开个需求](https://github.com/codecloud-dev/agent-core/issues)
+- 💥 遇到崩溃 / 黑屏 / 跑不起来？→ [提个 Bug 报告](https://mox-site.pages.dev/go.html?r=agent-core&p=issues)
+- 💡 有想要的功能？→ [开个需求](https://mox-site.pages.dev/go.html?r=agent-core&p=issues)
 - 🗯️ 单纯想吐槽、挑刺？→ 也欢迎开 issue，标签随便打 😄
 
 每个 issue 我都会看，能修的尽快修。一起把它从“能跑”养到“好用” 💪

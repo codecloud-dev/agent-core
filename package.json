@@ -1,6 +1,6 @@
 {
   "name": "@mox/agent-core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Runtime-agnostic core for building thinking, safely-autonomous AI agents: a metacognition protocol (think/reflect) plus tiered-autonomy guardrails (tool tiers, daily circuit-breaker, shadow mode). Ships MemoryStorage / NodeStorage / D1Storage adapters. Platform-neutral, dependency-injected, fully tested.",
   "type": "module",
   "main": "./dist/index.cjs",

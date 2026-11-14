@@ -1,5 +1,5 @@
 {
-  "name": "@mox/agent-core",
+  "name": "@codecloud-dev/agent-core",
   "version": "1.1.0",
   "description": "Runtime-agnostic core for building thinking, safely-autonomous AI agents: a metacognition protocol (think/reflect) plus tiered-autonomy guardrails (tool tiers, daily circuit-breaker, shadow mode). Ships MemoryStorage / NodeStorage / D1Storage adapters. Platform-neutral, dependency-injected, fully tested.",
   "type": "module",
@@ -13,7 +13,11 @@
       "require": "./dist/index.cjs"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "npm run build:cjs && npm run build:esm && npm run build:types",
     "build:cjs": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --log-level=error",
@@ -54,7 +58,7 @@
   "sideEffects": false,
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "esbuild": "^0.21.0",
+    "esbuild": "^0.25.12",
     "typescript": "^5.4.0"
   }
 }

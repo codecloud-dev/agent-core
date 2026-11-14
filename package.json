@@ -1,6 +1,6 @@
 {
   "name": "@codecloud-dev/agent-core",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Runtime-agnostic core for building thinking, safely-autonomous AI agents: a metacognition protocol (think/reflect) plus tiered-autonomy guardrails (tool tiers, daily circuit-breaker, shadow mode). Ships MemoryStorage / NodeStorage / D1Storage adapters. Platform-neutral, dependency-injected, fully tested.",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -57,8 +57,8 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@types/node": "^20.11.0",
-    "esbuild": "^0.25.12",
-    "typescript": "^5.4.0"
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "typescript": "^5.9.3"
   }
 }

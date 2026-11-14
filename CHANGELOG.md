@@ -12,6 +12,13 @@
 
 - _（暂无待发布条目）_
 
+## [1.1.1] - 2026-11-14
+
+### 变更
+
+- **升级依赖（仅 devDependencies）**：`@types/node` 20.19.43 → 26.6.6、`esbuild` 0.25.12 → 0.28.2、`typescript` 下限 `^5.4.0` → `^5.9.3`（实际锁定 5.9.3，仍属 5.x 安全线，未跨大版本 7.x）。构建产物与发布包（dist/README/LICENSE）不受影响；`npm run build` 与 `npm test`（56 通过 / 0 失败）均通过，`npm audit` 0 漏洞。
+- **文档修正**：README / README.en 的包名由旧前缀 `@mox/agent-core` 统一更正为 `@codecloud-dev/agent-core`，版本徽标与发布状态（已发布）与 `package.json` 实际一致。
+
 ## 历史版本
 
 历史变更请看 [Releases 页面](../../releases)；本文件自 2026-11-11 起统一维护，此前条目不再补录，避免与发布记录产生两个互相矛盾的版本来源。

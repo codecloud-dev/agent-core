@@ -3,11 +3,11 @@
 <p align="center"><img src="assets/logo.svg" width="128" alt="MoX"/></p>
 
 
-# @mox/agent-core
+# @codecloud-dev/agent-core
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-8a7bff" alt="version">
-  <img src="https://img.shields.io/badge/npm-publish%20pending-ffb000" alt="npm">
+  <img src="https://img.shields.io/badge/version-1.1.1-8a7bff" alt="version">
+  <img src="https://img.shields.io/badge/npm-published-ffb000" alt="npm">
   <img src="https://img.shields.io/badge/license-MIT-37d5d3" alt="license">
   <img src="https://img.shields.io/badge/language-TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/runtime-any%20platform-2088FF" alt="platform-agnostic">
@@ -28,7 +28,7 @@
 <p align="center"><img src="assets/demo.svg" width="760" alt="agent-core 元认知环动图：核心引擎驱动 think → act → reflect 循环，分级自主护栏可控"></p>
 
 <p>
-  <b>⭐ 如果 @mox/agent-core 对你有用,欢迎点个 <a href="https://mox-site.pages.dev/go?r=agent-core">Star</a> —— 它能让更多开发者用上会思考、可控自治的 Agent 核心!</b>
+  <b>⭐ 如果 @codecloud-dev/agent-core 对你有用,欢迎点个 <a href="https://mox-site.pages.dev/go?r=agent-core">Star</a> —— 它能让更多开发者用上会思考、可控自治的 Agent 核心!</b>
 
 
 
@@ -87,14 +87,13 @@ npm install                 # 仅拉取 esbuild / typescript 等开发依赖
 npm run build
 ```
 
-### 📦 方式二：npm 安装（v1.0.0 起已就绪）
+### 📦 方式二：npm 安装（v1.1.0 起已发布）
 
 ```bash
-npm i @mox/agent-core
+npm i @codecloud-dev/agent-core
 ```
 
-> 发布状态：`package.json` 已就绪（`version: 1.0.0`、`prepublishOnly` 会自动构建）。维护者执行一次
-> `npm publish` 即可上线；上线后上方 `npm i` 即生效。文档站与示例均已按 1.0.0 编写。
+> 发布状态：包已发布到 npm（`version: 1.1.1`、`prepublishOnly` 会自动构建）。直接 `npm i` 即可安装；文档站与示例均按当前版本编写。
 
 需要打包到边缘运行时（Cloudflare Workers 等）时，用 esbuild/workerd 打包即可（无原生依赖）：
 
@@ -109,7 +108,7 @@ esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js
 ### 🔹 1. 元认知：归一化动作 + 闭环门
 
 ```ts
-import { normalizeActions, ReflectGate, buildThink, buildReflect } from '@mox/agent-core';
+import { normalizeActions, ReflectGate, buildThink, buildReflect } from '@codecloud-dev/agent-core';
 
 // 模型可能返回单个对象，也可能返回数组（think+call 打包）
 const actions = normalizeActions(parsedModelOutput); // Action[]
@@ -127,8 +126,8 @@ if (gate.isPending) reject('请先 reflect 再收尾');
 ### 🔹 2. 分级护栏：让自主执行可控
 
 ```ts
-import { guardExecute, defaultRemediationTier, isShadowMode } from '@mox/agent-core';
-import { MemoryStorage } from '@mox/agent-core'; // 本地/测试零依赖；生产换 D1Storage / NodeStorage
+import { guardExecute, defaultRemediationTier, isShadowMode } from '@codecloud-dev/agent-core';
+import { MemoryStorage } from '@codecloud-dev/agent-core'; // 本地/测试零依赖；生产换 D1Storage / NodeStorage
 
 const deps = {
   storage: new MemoryStorage(),   // 任何实现 Storage 的都行
@@ -165,7 +164,7 @@ npx tsx examples/quickstart.ts
 
 | 场景 | 引入方式 | 存储适配器 | 关键点 |
 |------|----------|------------|--------|
-| Node 服务 / CLI | `npm i @mox/agent-core`（ESM）或 `require`（CJS） | `NodeStorage` | 文件持久化，零原生依赖 |
+| Node 服务 / CLI | `npm i @codecloud-dev/agent-core`（ESM）或 `require`（CJS） | `NodeStorage` | 文件持久化，零原生依赖 |
 | 边缘 / Cloudflare Workers | esbuild 打包成单文件 ESM | `D1Storage` | 无原生依赖，直接上 Workers |
 | 单元测试 / 本地 | 源码 `npx tsx examples/quickstart.ts` | `MemoryStorage` | 零依赖 Mock，跑通即验证 |
 | Web 框架（Hono / Express） | 作为中间件注入 | 任意 | 请求级隔离，每个请求一个新 Storage |
@@ -174,10 +173,10 @@ npx tsx examples/quickstart.ts
 
 ```ts
 // ESM（推荐，package.json 设 "type": "module"）
-import { normalizeActions, guardExecute, MemoryStorage } from '@mox/agent-core';
+import { normalizeActions, guardExecute, MemoryStorage } from '@codecloud-dev/agent-core';
 
 // CJS
-// const { guardExecute, MemoryStorage } = require('@mox/agent-core');
+// const { guardExecute, MemoryStorage } = require('@codecloud-dev/agent-core');
 ```
 
 ### 🔹 2. 边缘运行时：Cloudflare Workers / 无服务器
@@ -186,7 +185,7 @@ import { normalizeActions, guardExecute, MemoryStorage } from '@mox/agent-core';
 
 ```ts
 // worker.ts
-import { guardExecute, D1Storage, defaultRemediationTier } from '@mox/agent-core';
+import { guardExecute, D1Storage, defaultRemediationTier } from '@codecloud-dev/agent-core';
 
 export default {
   async fetch(_req: Request, env: { DB: unknown }) {
@@ -210,7 +209,7 @@ esbuild worker.ts --bundle --format=esm --outfile=dist/worker.js
 `MemoryStorage` 自带 `clear()`，每个用例前清一次即可隔离；用假 `executor` 断言护栏行为：
 
 ```ts
-import { guardExecute, MemoryStorage, setShadowMode, defaultRemediationTier } from '@mox/agent-core';
+import { guardExecute, MemoryStorage, setShadowMode, defaultRemediationTier } from '@codecloud-dev/agent-core';
 
 const fakeExec = { async execute() { return { ok: true, summary: 'mock' }; } };
 const storage = new MemoryStorage();
@@ -230,7 +229,7 @@ storage.clear();
 
 ```ts
 import { Hono } from 'hono';
-import { guardExecute, D1Storage, defaultRemediationTier } from '@mox/agent-core';
+import { guardExecute, D1Storage, defaultRemediationTier } from '@codecloud-dev/agent-core';
 
 const app = new Hono<{ Bindings: { DB: any } }>();
 app.post('/agent/act', async (c) => {
@@ -309,12 +308,12 @@ interface ActionLogger {      // 护栏关键分支回调（可选）
 
 | 适配器 | 导入 | 用途 | 依赖 |
 |--------|------|------|------|
-| `MemoryStorage` | `@mox/agent-core` | 本地开发 / 单测 / 演示 / 无状态冷启动 | 零依赖 |
-| `NodeStorage` | `@mox/agent-core` | Node 服务 / CLI / 自托管，文件持久化 | 仅用 `node:fs`（**方法调用时才动态加载**，不影响 Workers 兼容性） |
-| `D1Storage` | `@mox/agent-core` | Cloudflare D1 | Cloudflare 运行时 |
+| `MemoryStorage` | `@codecloud-dev/agent-core` | 本地开发 / 单测 / 演示 / 无状态冷启动 | 零依赖 |
+| `NodeStorage` | `@codecloud-dev/agent-core` | Node 服务 / CLI / 自托管，文件持久化 | 仅用 `node:fs`（**方法调用时才动态加载**，不影响 Workers 兼容性） |
+| `D1Storage` | `@codecloud-dev/agent-core` | Cloudflare D1 | Cloudflare 运行时 |
 
 ```ts
-import { MemoryStorage, NodeStorage, D1Storage } from '@mox/agent-core';
+import { MemoryStorage, NodeStorage, D1Storage } from '@codecloud-dev/agent-core';
 
 // 本地 / 测试
 const a = new MemoryStorage();
@@ -331,7 +330,7 @@ const c = new D1Storage(env.DB, { table: 'agent_kv' });
 核心只认 `Storage` 接口。以 Redis 为例（完整模板见 `examples/custom-adapter.ts`）：
 
 ```ts
-import type { Storage } from '@mox/agent-core';
+import type { Storage } from '@codecloud-dev/agent-core';
 
 class RedisStorage implements Storage {
   async getJSON<T = unknown>(key: string): Promise<T | null> {
@@ -398,7 +397,7 @@ class RedisStorage implements Storage {
 | Node 文件 Storage 适配器 `NodeStorage` | ✅ **1.0.0 新增** | Node 服务零依赖持久化 |
 | 可运行开发者示例 `examples/` | ✅ **1.0.0 新增** | quickstart / 自定义适配器模板 |
 | 完整开发者文档 + API 参考 | ✅ **1.0.0 新增** | 本 README |
-| npm 正式发布 | 🟡 待发布 | 配置已就绪，维护者 `npm publish` 即上线 |
+| npm 正式发布 | ✅ 已发布 | `@codecloud-dev/agent-core`，`npm i` 即装 |
 | 更多官方适配器示例（Redis / Prisma / DynamoDB） | ⏳ 规划中 | 欢迎社区贡献 |
 | 护栏指标 / 可观测性导出 | ⏳ 规划中 | `ActionLogger` 已留回调口 |
 

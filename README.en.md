@@ -3,11 +3,11 @@
 <p align="center"><img src="assets/logo.svg" width="128" alt="MoX"/></p>
 
 
-# @mox/agent-core
+# @codecloud-dev/agent-core
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.0.0-8a7bff" alt="version">
-  <img src="https://img.shields.io/badge/npm-publish%20pending-ffb000" alt="npm">
+  <img src="https://img.shields.io/badge/version-1.1.1-8a7bff" alt="version">
+  <img src="https://img.shields.io/badge/npm-published-ffb000" alt="npm">
   <img src="https://img.shields.io/badge/license-MIT-37d5d3" alt="license">
   <img src="https://img.shields.io/badge/language-TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
   <img src="https://img.shields.io/badge/runtime-any%20platform-2088FF" alt="platform-agnostic">
@@ -25,7 +25,7 @@
 <p align="center"><img src="assets/demo.svg" width="760" alt="agent-core animation: the core engine drives the think → act → reflect loop, with controllable tiered-autonomy guardrails"></p>
 
 <p>
-  <b>⭐ If @mox/agent-core is useful to you, please give it a <a href="https://mox-site.pages.dev/go?r=agent-core">Star</a> — it helps more developers adopt a thinking, controllable-autonomy Agent core!</b>
+  <b>⭐ If @codecloud-dev/agent-core is useful to you, please give it a <a href="https://mox-site.pages.dev/go?r=agent-core">Star</a> — it helps more developers adopt a thinking, controllable-autonomy Agent core!</b>
 
 
 
@@ -84,13 +84,13 @@ npm install                 # only pulls dev deps like esbuild / typescript
 npm run build
 ```
 
-### 📦 Option B: npm (ready since v1.0.0)
+### 📦 Option B: npm (published since v1.1.0)
 
 ```bash
-npm i @mox/agent-core
+npm i @codecloud-dev/agent-core
 ```
 
-> Publish status: `package.json` is ready (`version: 1.0.0`, `prepublishOnly` builds automatically). A maintainer runs `npm publish` once to go live; afterwards the `npm i` above works. Docs and examples are already written for 1.0.0.
+> Publish status: the package is published to npm (`version: 1.1.1`, `prepublishOnly` builds automatically). Just run the `npm i` above to install; docs and examples track the current version.
 
 To bundle for edge runtimes (Cloudflare Workers, etc.), use esbuild/workerd (no native deps):
 
@@ -105,7 +105,7 @@ esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js
 ### 🔹 1. Metacognition: normalize actions + closed-loop gate
 
 ```ts
-import { normalizeActions, ReflectGate, buildThink, buildReflect } from '@mox/agent-core';
+import { normalizeActions, ReflectGate, buildThink, buildReflect } from '@codecloud-dev/agent-core';
 
 // The model may return a single object, or an array (think+call packed)
 const actions = normalizeActions(parsedModelOutput); // Action[]
@@ -123,8 +123,8 @@ if (gate.isPending) reject('reflect before finishing');
 ### 🔹 2. Tiered guardrails: make autonomous execution controllable
 
 ```ts
-import { guardExecute, defaultRemediationTier, isShadowMode } from '@mox/agent-core';
-import { MemoryStorage } from '@mox/agent-core'; // zero-dep local/test; swap to D1Storage / NodeStorage in prod
+import { guardExecute, defaultRemediationTier, isShadowMode } from '@codecloud-dev/agent-core';
+import { MemoryStorage } from '@codecloud-dev/agent-core'; // zero-dep local/test; swap to D1Storage / NodeStorage in prod
 
 const deps = {
   storage: new MemoryStorage(),   // anything implementing Storage works
@@ -161,7 +161,7 @@ Same core — pick one integration for your runtime. Each below is a copy-paste 
 
 | Scenario | Import | Storage adapter | Key point |
 |----------|--------|-----------------|-----------|
-| Node service / CLI | `npm i @mox/agent-core` (ESM) or `require` (CJS) | `NodeStorage` | file persistence, no native deps |
+| Node service / CLI | `npm i @codecloud-dev/agent-core` (ESM) or `require` (CJS) | `NodeStorage` | file persistence, no native deps |
 | Edge / Cloudflare Workers | esbuild bundle to single-file ESM | `D1Storage` | no native deps, deploys straight to Workers |
 | Unit tests / local | source `npx tsx examples/quickstart.ts` | `MemoryStorage` | zero-dep mock, passes = verified |
 | Web framework (Hono / Express) | inject as middleware | any | per-request isolation, a fresh Storage per request |
@@ -170,10 +170,10 @@ Same core — pick one integration for your runtime. Each below is a copy-paste 
 
 ```ts
 // ESM (recommended; package.json "type": "module")
-import { normalizeActions, guardExecute, MemoryStorage } from '@mox/agent-core';
+import { normalizeActions, guardExecute, MemoryStorage } from '@codecloud-dev/agent-core';
 
 // CJS
-// const { guardExecute, MemoryStorage } = require('@mox/agent-core');
+// const { guardExecute, MemoryStorage } = require('@codecloud-dev/agent-core');
 ```
 
 ### 🔹 2. Edge runtime: Cloudflare Workers / serverless
@@ -182,7 +182,7 @@ The core has no native deps. `NodeStorage` only does `import('node:fs')` when a 
 
 ```ts
 // worker.ts
-import { guardExecute, D1Storage, defaultRemediationTier } from '@mox/agent-core';
+import { guardExecute, D1Storage, defaultRemediationTier } from '@codecloud-dev/agent-core';
 
 export default {
   async fetch(_req: Request, env: { DB: unknown }) {
@@ -206,7 +206,7 @@ esbuild worker.ts --bundle --format=esm --outfile=dist/worker.js
 `MemoryStorage` has `clear()`; call it before each case to isolate. Use a fake `executor` to assert guardrail behavior:
 
 ```ts
-import { guardExecute, MemoryStorage, setShadowMode, defaultRemediationTier } from '@mox/agent-core';
+import { guardExecute, MemoryStorage, setShadowMode, defaultRemediationTier } from '@codecloud-dev/agent-core';
 
 const fakeExec = { async execute() { return { ok: true, summary: 'mock' }; } };
 const storage = new MemoryStorage();
@@ -226,7 +226,7 @@ storage.clear();
 
 ```ts
 import { Hono } from 'hono';
-import { guardExecute, D1Storage, defaultRemediationTier } from '@mox/agent-core';
+import { guardExecute, D1Storage, defaultRemediationTier } from '@codecloud-dev/agent-core';
 
 const app = new Hono<{ Bindings: { DB: any } }>();
 app.post('/agent/act', async (c) => {
@@ -305,12 +305,12 @@ interface ActionLogger {      // guardrail branch callbacks (optional)
 
 | Adapter | Import | Use | Deps |
 |---------|--------|-----|------|
-| `MemoryStorage` | `@mox/agent-core` | local dev / unit tests / demos / stateless cold start | zero-dep |
-| `NodeStorage` | `@mox/agent-core` | Node service / CLI / self-host, file persistence | only `node:fs` (**dynamically loaded on method call**, doesn't break Workers compat) |
-| `D1Storage` | `@mox/agent-core` | Cloudflare D1 | Cloudflare runtime |
+| `MemoryStorage` | `@codecloud-dev/agent-core` | local dev / unit tests / demos / stateless cold start | zero-dep |
+| `NodeStorage` | `@codecloud-dev/agent-core` | Node service / CLI / self-host, file persistence | only `node:fs` (**dynamically loaded on method call**, doesn't break Workers compat) |
+| `D1Storage` | `@codecloud-dev/agent-core` | Cloudflare D1 | Cloudflare runtime |
 
 ```ts
-import { MemoryStorage, NodeStorage, D1Storage } from '@mox/agent-core';
+import { MemoryStorage, NodeStorage, D1Storage } from '@codecloud-dev/agent-core';
 
 // local / tests
 const a = new MemoryStorage();
@@ -327,7 +327,7 @@ const c = new D1Storage(env.DB, { table: 'agent_kv' });
 The core only knows the `Storage` interface. Redis example (full template in `examples/custom-adapter.ts`):
 
 ```ts
-import type { Storage } from '@mox/agent-core';
+import type { Storage } from '@codecloud-dev/agent-core';
 
 class RedisStorage implements Storage {
   async getJSON<T = unknown>(key: string): Promise<T | null> {
@@ -394,7 +394,7 @@ class RedisStorage implements Storage {
 | Node-file `NodeStorage` | ✅ **new in 1.0.0** | zero-dep Node persistence |
 | Runnable dev examples `examples/` | ✅ **new in 1.0.0** | quickstart / custom-adapter template |
 | Full dev docs + API reference | ✅ **new in 1.0.0** | this README |
-| npm public release | 🟡 pending | config ready; maintainer `npm publish` goes live |
+| npm public release | ✅ published | `@codecloud-dev/agent-core`, install via `npm i` |
 | More official adapter examples (Redis / Prisma / DynamoDB) | ⏳ planned | community welcome |
 | Guardrail metrics / observability export | ⏳ planned | `ActionLogger` callback already in place |
 

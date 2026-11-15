@@ -6,12 +6,21 @@
 # @codecloud-dev/agent-core
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-1.1.1-8a7bff" alt="version">
-  <img src="https://img.shields.io/badge/npm-published-ffb000" alt="npm">
-  <img src="https://img.shields.io/badge/license-MIT-37d5d3" alt="license">
-  <img src="https://img.shields.io/badge/language-TypeScript-3178C6?logo=typescript&logoColor=white" alt="TypeScript">
-  <img src="https://img.shields.io/badge/runtime-any%20platform-2088FF" alt="platform-agnostic">
-  <img src="https://img.shields.io/badge/docs-中%2FEN%20switch-ff7ac3" alt="docs">
+  <a href="https://github.com/codecloud-dev/agent-core"><img src="https://img.shields.io/badge/MoX_Series-Agent_%E6%A0%B8%E5%BF%83-8a7bff?style=for-the-badge&logo=github&logoColor=white" alt="MoX Series: Agent 核心"></a>
+  <a href="https://github.com/codecloud-dev/agent-core/blob/main/README.md"><img src="https://img.shields.io/badge/TypeScript-%E5%8D%8F%E8%AE%AE%E5%BC%95%E6%93%8E-14181A?style=for-the-badge&logo=typescript&logoColor=3178C6" alt="TypeScript: 协议引擎"></a>
+  <a href="https://github.com/codecloud-dev/agent-core/blob/main/README.md"><img src="https://img.shields.io/badge/MCP-%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8-14181A?style=for-the-badge&logo=modelcontextprotocol&logoColor=white" alt="MCP: 工具调用"></a>
+  <a href="https://github.com/codecloud-dev/agent-core/blob/main/README.md"><img src="https://img.shields.io/badge/npm-%E5%B7%B2%E5%8F%91%E5%B8%83-14181A?style=for-the-badge&logo=npm&logoColor=CB3837" alt="npm: 已发布"></a>
+  <a href="https://github.com/codecloud-dev/agent-core/blob/main/README.md"><img src="https://img.shields.io/badge/docs-%E4%B8%AD_%2F_EN-14181A?style=for-the-badge&logo=gitbook&logoColor=2088FF" alt="docs: 中 / EN"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/codecloud-dev/agent-core/actions/workflows/publish.yml"><img src="https://img.shields.io/github/actions/workflow/status/codecloud-dev/agent-core/publish.yml?branch=main&style=flat-square&label=CI" alt="CI"></a>
+  <a href="https://www.npmjs.com/package/@codecloud-dev/agent-core"><img src="https://img.shields.io/npm/v/%40codecloud-dev%2Fagent-core?style=flat-square&label=npm&color=37d5d3" alt="npm: @codecloud-dev/agent-core"></a>
+  <a href="https://github.com/codecloud-dev/agent-core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/codecloud-dev/agent-core?style=flat-square&color=37d5d3" alt="License"></a>
+  <a href="https://github.com/codecloud-dev/agent-core/stargazers"><img src="https://img.shields.io/github/stars/codecloud-dev/agent-core?style=flat-square&color=ff7ac3" alt="Stars"></a>
+  <a href="https://github.com/codecloud-dev/agent-core/commits/main"><img src="https://img.shields.io/github/last-commit/codecloud-dev/agent-core?style=flat-square&color=8a7bff" alt="Last commit"></a>
+  <a href="https://github.com/codecloud-dev/agent-core"><img src="https://img.shields.io/badge/tests-56_passed-3DDC84?style=flat-square" alt="tests: 56 passed"></a>
+  <a href="https://github.com/codecloud-dev/agent-core/pulls"><img src="https://img.shields.io/badge/PRs-welcome-8a7bff?style=flat-square&logo=github&logoColor=white" alt="PRs welcome"></a>
 </p>
 
 

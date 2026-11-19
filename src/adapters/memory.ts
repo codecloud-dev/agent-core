@@ -21,6 +21,19 @@ export class MemoryStorage implements Storage {
     this.store.set(key, JSON.stringify(value));
   }
 
+  // JS 单线程 + Map 的同步读改写本身即原子（没有 await），天然满足 CAS 语义。
+  // 比较用 JSON 归一化后的字符串，容忍外部写入带空白的 JSON。
+  async compareAndSwapJSON(key: string, expected: unknown, next: unknown): Promise<boolean> {
+    const raw = this.store.get(key);
+    let current: unknown = null;
+    if (raw != null) {
+      try { current = JSON.parse(raw); } catch { return false; } // 脏数据不参与 CAS
+    }
+    if (JSON.stringify(current) !== JSON.stringify(expected)) return false;
+    this.store.set(key, JSON.stringify(next));
+    return true;
+  }
+
   /** 清空全部键值（仅供测试 / 重置场景使用） */
   clear(): void {
     this.store.clear();

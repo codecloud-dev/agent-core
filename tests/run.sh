@@ -10,6 +10,8 @@ echo "==> 打包 src/index.ts"
 npx esbuild src/index.ts --bundle --format=cjs --platform=node --outfile=_bundle.cjs --log-level=error
 
 echo
-echo "========== @mox/agent-core 单元测试 =========="
+echo "========== @codecloud-dev/agent-core 单元测试 =========="
 node tests/core.test.cjs
 node tests/adapters.test.cjs
+node tests/reliability.test.cjs
+node tests/graph.test.cjs

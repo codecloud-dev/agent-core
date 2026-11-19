@@ -1,4 +1,4 @@
-> **🌐 主仓库在 GitHub** — [`codecloud-dev/agent-core`](https://mox-site.pages.dev/go?r=agent-core) 是唯一主源：Issue、Pull Request、功能讨论请统一提交到 GitHub。[Gitee 镜像](https://gitee.com/thousand-code-crafts/agent-core) 仅供国内高速只读访问，每小时从 GitHub 自动同步。
+> **🌐 主仓库在 GitHub** — [`codecloud-dev/agent-core`](https://mox-site.pages.dev/go?r=agent-core) 是唯一主源：Issue、Pull Request、功能讨论请统一提交到 GitHub。[Gitee 镜像](https://gitee.com/codecloud-dev/agent-core) 仅供国内高速只读访问，每小时从 GitHub 自动同步。
 
 <p align="center"><img src="assets/logo.svg" width="128" alt="MoX"/></p>
 
@@ -19,7 +19,7 @@
   <a href="https://github.com/codecloud-dev/agent-core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/codecloud-dev/agent-core?style=flat-square&color=37d5d3" alt="License"></a>
   <a href="https://github.com/codecloud-dev/agent-core/stargazers"><img src="https://img.shields.io/github/stars/codecloud-dev/agent-core?style=flat-square&color=ff7ac3" alt="Stars"></a>
   <a href="https://github.com/codecloud-dev/agent-core/commits/main"><img src="https://img.shields.io/github/last-commit/codecloud-dev/agent-core?style=flat-square&color=8a7bff" alt="Last commit"></a>
-  <a href="https://github.com/codecloud-dev/agent-core"><img src="https://img.shields.io/badge/tests-56_passed-3DDC84?style=flat-square" alt="tests: 56 passed"></a>
+  <a href="https://github.com/codecloud-dev/agent-core"><img src="https://img.shields.io/badge/tests-116_passed-3DDC84?style=flat-square" alt="tests: 116 passed"></a>
   <a href="https://github.com/codecloud-dev/agent-core/pulls"><img src="https://img.shields.io/badge/PRs-welcome-8a7bff?style=flat-square&logo=github&logoColor=white" alt="PRs welcome"></a>
 </p>
 
@@ -102,7 +102,7 @@ npm run build
 npm i @codecloud-dev/agent-core
 ```
 
-> 发布状态：包已发布到 npm（`version: 1.1.1`、`prepublishOnly` 会自动构建）。直接 `npm i` 即可安装；文档站与示例均按当前版本编写。
+> 发布状态：当前开发版本 `1.1.2`（`prepublishOnly` 会自动构建）。npm 已发布版本为 1.1.1；直接 `npm i` 即可安装。文档站与示例均按当前版本编写。
 
 需要打包到边缘运行时（Cloudflare Workers 等）时，用 esbuild/workerd 打包即可（无原生依赖）：
 
@@ -262,6 +262,47 @@ npx tsx examples/quickstart.ts
 
 > 想换存储后端（Redis / Prisma / DynamoDB）？照 [`examples/custom-adapter.ts`](examples/custom-adapter.ts) 的 `RedisStorage` 模板实现 `Storage` 接口的 `getJSON` / `setJSON` 两个方法即可，核心一行不用改。
 
+### 🔹 6. 有状态图：checkpoint / HITL / time-travel / 可观测（1.1.2 新增）
+
+把「先审后批」这类多步流程编排成图——每步自动落盘，遇到需要人拍板的地方暂停，批准后再续跑：
+
+```ts
+import { StateGraph, NodeStorage } from '@codecloud-dev/agent-core';
+
+const graph = new StateGraph();
+graph
+  .addNode('draft',  (s) => ({ text: '拟加 100 额度' }))
+  .addNode('review', (s, ctx) => {
+    if (!ctx.resumed) ctx.interrupt({ question: '批准这笔补偿？' }); // 暂停等人
+    return { approved: ctx.resumeValue === true };
+  })
+  .addNode('apply', (s) => ({ done: s.approved }))
+  .addEdge('draft', 'review')
+  .addEdge('review', 'apply')
+  .addEdge('apply', '__end__')
+  .setEntry('draft');
+
+const checkpointer = new NodeStorage({ file: './graph.kv.json' });
+const app = graph.compile({
+  checkpointer,
+  observer: (e) => console.log(e.type, e.node ?? '', e.step), // 可观测事件流
+});
+
+const paused = await app.invoke({});                  // status='interrupted'
+console.log(paused.interrupt.payload.question);       // '批准这笔补偿？'
+const finished = await app.resume(paused.checkpointId, true); // 注入人工决定后重跑 review
+console.log(finished.state.done);                     // true
+
+// time-travel：回到任意历史 checkpoint，覆盖状态后按新状态重新路由，分叉出另一条线
+const cps = await app.listCheckpoints();
+const fork = await app.invoke(undefined, {
+  fromCheckpoint: cps[0].id,
+  stateOverride: { amount: 0 },
+});
+```
+
+要点：`checkpoint` 的 `parentId` 串成完整链（起点、每步、终点都有快照）；`resume` 会把人工输入交给被中断节点重跑；`stateOverride` 分叉会**重算后继**，不会沿用旧状态算出的分支；`observer` 抛错被吞掉，不会拖垮图执行；`maxSteps`（默认 100）防自激循环，节点抛错也会落一个 `status='error'` 的 checkpoint。
+
 ---
 
 ## ⚙️ 核心概念
@@ -384,6 +425,19 @@ class RedisStorage implements Storage {
 
 `GuardResult`：`{ ok, summary, simulated, blocked?, data }`。
 
+### 🔹 有状态图（`graph`，1.1.2 新增）
+
+| 导出 | 签名 | 说明 |
+|------|------|------|
+| `StateGraph` | `class` | `addNode` / `addEdge` / `addConditionalEdge` / `setEntry` / `compile`；构造可传 `reducer` / `finish` |
+| `CompiledGraph` | `class` | `invoke(input, opts?)` / `resume(cpId, value)` / `listCheckpoints()` / `getCheckpoint(id)` |
+| `Checkpoint` | `{ id, parentId, step, node, next, state, status, interrupt?, error?, createdAt }` | 每步快照，`parentId` 成链 |
+| `GraphEvent` | `{ type, step, node?, ts, state?, durationMs?, payload?, error? }` | observer / 结果 `events` 的可观测事件 |
+| `NodeContext` | `{ step, signal?, interrupt(payload), resumeValue, resumed }` | 节点回调入参，`interrupt` 触发 HITL 暂停 |
+| `RunResult` | `{ status, state, checkpointId, interrupt?, error?, events, steps }` | 一轮执行结果 |
+
+`compile()` 选项：`checkpointer`（任意 `Storage`）、`checkpointPrefix`、`observer`、`maxSteps`、`now`。
+
 ### 🔤 类型（`types`）
 
 `ActionType`、`Action`、`ThinkAction`、`ReflectAction`、`CallAction`、`AnswerAction`、
@@ -406,9 +460,12 @@ class RedisStorage implements Storage {
 | Node 文件 Storage 适配器 `NodeStorage` | ✅ **1.0.0 新增** | Node 服务零依赖持久化 |
 | 可运行开发者示例 `examples/` | ✅ **1.0.0 新增** | quickstart / 自定义适配器模板 |
 | 完整开发者文档 + API 参考 | ✅ **1.0.0 新增** | 本 README |
-| npm 正式发布 | ✅ 已发布 | `@codecloud-dev/agent-core`，`npm i` 即装 |
+| npm 正式发布 | ✅ 已发布 | `@codecloud-dev/agent-core`，当前线上 1.1.1；1.1.2 待主流程发版 |
+| 有状态图 / checkpoint / HITL / time-travel | ✅ **1.1.2 新增** | `StateGraph` / `CompiledGraph`，对标 LangGraph |
+| 可观测事件流（图执行） | ✅ **1.1.2 新增** | `observer` + `events`；`ActionLogger` 仍为护栏回调口 |
+| 并发安全的单日熔断（CAS 占位） | ✅ **1.1.2 修复** | 10 并发 / cap=3 不再被击穿 |
+| 真实基准脚本 | ✅ **1.1.2 新增** | `npm run bench -- 200` |
 | 更多官方适配器示例（Redis / Prisma / DynamoDB） | ⏳ 规划中 | 欢迎社区贡献 |
-| 护栏指标 / 可观测性导出 | ⏳ 规划中 | `ActionLogger` 已留回调口 |
 
 ---
 
@@ -426,15 +483,26 @@ class RedisStorage implements Storage {
 **Q：如何重置熔断 / 影子状态？**
 直接通过 `Storage` 删掉对应键（`agent:gate` / `agent:shadow`）即可；`MemoryStorage` 提供 `clear()`。
 
+**Q：单日额度在并发下会被击穿吗？**
+不会（1.1.2 修复）。`guardExecute` 先原子占位再执行、失败退回；内置三个 `Storage` 都实现 `compareAndSwapJSON`，Cloudflare D1 走条件 SQL 跨 Worker 原子。多进程共写一个本地 `NodeStorage` 文件没有跨进程文件锁，该场景请换带原子 CAS 的后端（如 D1 / Redis）。
+
+**Q：HITL 中断后人工输入怎么传回节点？**
+`invoke` 返回 `status='interrupted'` 和 `checkpointId`，调用 `resume(checkpointId, value)`；节点里用 `ctx.resumeValue` 读取、`ctx.resumed` 判断是否重跑。
+
 ---
 
 ## 🧪 测试
 
 ```bash
-npm test      # esbuild 打包后用内存 Storage mock 跑，全部覆盖全路径
+npm test                    # esbuild 打包后跑 4 个测试文件，共 116 例全绿
+npm run build               # cjs + esm + tsc 声明产出
+npx tsc --noEmit            # 类型检查
+npm run bench -- 200        # 真实基准（先 npm run build）
 ```
 
-覆盖：① 动作归一化；② 工具分级；③ 单日熔断；④ 影子模式；⑤ guardExecute（熔断拦截 / 影子模拟 / 低危免额度 / 正常执行）；⑥ ReflectGate 闭环；⑦ think/reflect 构造与校验；⑧ MemoryStorage / NodeStorage 往返。
+覆盖：① 动作归一化；② 工具分级；③ 单日熔断（含本地日期分桶 + 并发占位防击穿 + CAS）；④ 影子模式；⑤ guardExecute 全分支；⑥ ReflectGate 闭环；⑦ think/reflect 构造校验；⑧ MemoryStorage / NodeStorage 往返；⑨ 有状态图：路由 / checkpoint 链 / HITL 中断恢复 / time-travel 分叉 / 可观测 / maxSteps / 错误快照。
+
+`npm test` 本机实测：`47 + 9 + 23 + 37 = 116` 通过、0 失败（退出码 0）。基准 `npm run bench -- 200`（node v22.13.1，连续 4 次采样区间，随机器负载波动）：状态图 200 步 / 202 checkpoint 2.59–3.11 ms（约 6.4–7.7 万 steps/s）；MemoryStorage 写 0.42–0.59 ms / 读 0.15–0.18 ms；NodeStorage 逐条写 46.57–52.48 ms，`autosync:false` + `flush()` 批量写 0.59–0.89 ms（约 76–79x）；guardExecute 并发占位 1.35–2.04 ms（约 9.8–14.8 万 ops/s）。
 
 ---
 

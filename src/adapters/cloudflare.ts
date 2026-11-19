@@ -77,4 +77,29 @@ export class D1Storage implements Storage {
       `ON CONFLICT(${this.keyCol}) DO UPDATE SET ${this.valCol} = excluded.${this.valCol}`;
     await this.db.prepare(sql).bind(key, JSON.stringify(value)).run();
   }
+
+  // 数据库层的原子 CAS：条件 UPDATE 由 SQLite/D1 保证行级原子，
+  // 因此多个 Worker 实例并发领取额度也不会互相击穿。
+  async compareAndSwapJSON(key: string, expected: unknown, next: unknown): Promise<boolean> {
+    const nextRaw = JSON.stringify(next);
+    if (expected === null) {
+      // 期望键不存在：用 INSERT OR IGNORE，靠主键冲突判断成败。
+      const sql = `INSERT OR IGNORE INTO ${this.table} (${this.keyCol}, ${this.valCol}) VALUES (?, ?)`;
+      const res = await this.db.prepare(sql).bind(key, nextRaw).run();
+      return changesOf(res) > 0;
+    }
+    const sql =
+      `UPDATE ${this.table} SET ${this.valCol} = ? ` +
+      `WHERE ${this.keyCol} = ? AND ${this.valCol} = ?`;
+    const res = await this.db.prepare(sql).bind(nextRaw, key, JSON.stringify(expected)).run();
+    return changesOf(res) > 0;
+  }
+}
+
+// D1 的 run() 结果带 changes（部分兼容层放在 meta.changes），兼容两种形态。
+function changesOf(res: unknown): number {
+  if (!res || typeof res !== 'object') return 0;
+  const r = res as { changes?: number; meta?: { changes?: number } };
+  const n = r.changes ?? r.meta?.changes;
+  return typeof n === 'number' && Number.isFinite(n) ? n : 0;
 }

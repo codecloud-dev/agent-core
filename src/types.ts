@@ -56,6 +56,16 @@ export type Action = ThinkAction | ReflectAction | CallAction | AnswerAction;
 export interface Storage {
   getJSON<T = unknown>(key: string): Promise<T | null>;
   setJSON(key: string, value: unknown): Promise<void>;
+  /**
+   * 可选：原子「比较并交换」（CAS）。仅当当前值在 JSON 语义上等于 expected 时，
+   * 才写入 next，返回是否成功。内置三个适配器均已实现。
+   *
+   * 护栏用它把「读额度 → 判断 → 占位」做成原子操作，避免并发请求同时读到
+   * 同一个旧额度而一起击穿熔断（见 guardrails.ts 的 claimGateSlot）。
+   * 自定义适配器若不实现，护栏会退化为进程内互斥锁（同进程安全，跨进程不保证）。
+   * expected 为 null 表示「期望键不存在」。
+   */
+  compareAndSwapJSON?(key: string, expected: unknown, next: unknown): Promise<boolean>;
 }
 
 // 动作执行器：护栏只负责「何时允许 / 何时模拟」，真正的自愈动作由外部执行。

@@ -88,6 +88,22 @@ export class NodeStorage implements Storage {
     if (this.autosync) await this.persist();
   }
 
+  // 进程内 CAS：比较与写入之间没有 await（ensureLoaded 完成后），
+  // 配合 guardrails 的进程内互斥锁即可保证同进程并发安全。
+  // 注意：多进程写同一文件没有跨进程文件锁，本适配器不承诺跨进程原子性。
+  async compareAndSwapJSON(key: string, expected: unknown, next: unknown): Promise<boolean> {
+    await this.ensureLoaded();
+    const raw = this.cache.get(key);
+    let current: unknown = null;
+    if (raw != null) {
+      try { current = JSON.parse(raw); } catch { return false; }
+    }
+    if (JSON.stringify(current) !== JSON.stringify(expected)) return false;
+    this.cache.set(key, JSON.stringify(next));
+    if (this.autosync) await this.persist();
+    return true;
+  }
+
   /** 手动落盘（autosync=false 时使用），确保退出前数据已写入文件 */
   async flush(): Promise<void> {
     await this.persist();

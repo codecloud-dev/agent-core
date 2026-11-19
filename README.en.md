@@ -1,4 +1,4 @@
-> **🌐 Canonical repository is on GitHub** — [`codecloud-dev/agent-core`](https://mox-site.pages.dev/go?r=agent-core) is the single source of truth: please file all issues and pull requests there. The [Gitee mirror](https://gitee.com/thousand-code-crafts/agent-core) is a read-only copy synced hourly for faster access in mainland China.
+> **🌐 Canonical repository is on GitHub** — [`codecloud-dev/agent-core`](https://mox-site.pages.dev/go?r=agent-core) is the single source of truth: please file all issues and pull requests there. The [Gitee mirror](https://gitee.com/codecloud-dev/agent-core) is a read-only copy synced hourly for faster access in mainland China.
 
 <p align="center"><img src="assets/logo.svg" width="128" alt="MoX"/></p>
 
@@ -19,7 +19,7 @@
   <a href="https://github.com/codecloud-dev/agent-core/blob/main/LICENSE"><img src="https://img.shields.io/github/license/codecloud-dev/agent-core?style=flat-square&color=37d5d3" alt="License"></a>
   <a href="https://github.com/codecloud-dev/agent-core/stargazers"><img src="https://img.shields.io/github/stars/codecloud-dev/agent-core?style=flat-square&color=ff7ac3" alt="Stars"></a>
   <a href="https://github.com/codecloud-dev/agent-core/commits/main"><img src="https://img.shields.io/github/last-commit/codecloud-dev/agent-core?style=flat-square&color=8a7bff" alt="Last commit"></a>
-  <a href="https://github.com/codecloud-dev/agent-core"><img src="https://img.shields.io/badge/tests-56_passed-3DDC84?style=flat-square" alt="tests: 56 passed"></a>
+  <a href="https://github.com/codecloud-dev/agent-core"><img src="https://img.shields.io/badge/tests-116_passed-3DDC84?style=flat-square" alt="tests: 116 passed"></a>
   <a href="https://github.com/codecloud-dev/agent-core/pulls"><img src="https://img.shields.io/badge/PRs-welcome-8a7bff?style=flat-square&logo=github&logoColor=white" alt="PRs welcome"></a>
 </p>
 
@@ -99,7 +99,7 @@ npm run build
 npm i @codecloud-dev/agent-core
 ```
 
-> Publish status: the package is published to npm (`version: 1.1.1`, `prepublishOnly` builds automatically). Just run the `npm i` above to install; docs and examples track the current version.
+> Publish status: current development version is `1.1.2` (`prepublishOnly` builds automatically). npm currently has 1.1.1 published; just run the `npm i` above to install. Docs and examples track the current version.
 
 To bundle for edge runtimes (Cloudflare Workers, etc.), use esbuild/workerd (no native deps):
 
@@ -259,6 +259,40 @@ npx tsx examples/quickstart.ts
 
 > Want a different storage backend (Redis / Prisma / DynamoDB)? Implement the two `Storage` methods `getJSON` / `setJSON` following the `RedisStorage` template in [`examples/custom-adapter.ts`](examples/custom-adapter.ts) — the core stays untouched.
 
+### 🔹 6. Stateful graph: checkpoints / HITL / time-travel / observability (new in 1.1.2)
+
+Orchestrate multi-step flows as a graph — every step is checkpointed, and a node can pause for a human decision:
+
+```ts
+import { StateGraph, NodeStorage } from '@codecloud-dev/agent-core';
+
+const graph = new StateGraph();
+graph
+  .addNode('draft',  (s) => ({ text: 'grant 100 credits' }))
+  .addNode('review', (s, ctx) => {
+    if (!ctx.resumed) ctx.interrupt({ question: 'Approve this compensation?' });
+    return { approved: ctx.resumeValue === true };
+  })
+  .addNode('apply', (s) => ({ done: s.approved }))
+  .addEdge('draft', 'review').addEdge('review', 'apply').addEdge('apply', '__end__')
+  .setEntry('draft');
+
+const app = graph.compile({
+  checkpointer: new NodeStorage({ file: './graph.kv.json' }),
+  observer: (e) => console.log(e.type, e.node ?? '', e.step),
+});
+
+const paused = await app.invoke({});                       // status='interrupted'
+const finished = await app.resume(paused.checkpointId, true); // re-run review with human input
+console.log(finished.state.done);                          // true
+
+// time-travel: fork from any checkpoint with an overridden state (successors are recomputed)
+const cps = await app.listCheckpoints();
+const fork = await app.invoke(undefined, { fromCheckpoint: cps[0].id, stateOverride: { amount: 0 } });
+```
+
+Notes: checkpoints (start / every step / end) form a `parentId` chain; `resume` feeds the human value back into the interrupted node; `stateOverride` recomputes routing instead of reusing stale successors; observer errors are swallowed so they never break the graph; `maxSteps` (default 100) guards against self-amplifying loops, and node errors also produce an `error` checkpoint.
+
 ---
 
 ## ⚙️ Core concepts
@@ -381,6 +415,19 @@ class RedisStorage implements Storage {
 
 `GuardResult`: `{ ok, summary, simulated, blocked?, data }`.
 
+### 🔹 Stateful graph (`graph`, new in 1.1.2)
+
+| Export | Signature | Description |
+|--------|-----------|-------------|
+| `StateGraph` | `class` | `addNode` / `addEdge` / `addConditionalEdge` / `setEntry` / `compile`; constructor takes `reducer` / `finish` |
+| `CompiledGraph` | `class` | `invoke(input, opts?)` / `resume(cpId, value)` / `listCheckpoints()` / `getCheckpoint(id)` |
+| `Checkpoint` | `{ id, parentId, step, node, next, state, status, interrupt?, error?, createdAt }` | per-step snapshot, chained by `parentId` |
+| `GraphEvent` | `{ type, step, node?, ts, state?, durationMs?, payload?, error? }` | observability event delivered to observer and `events` |
+| `NodeContext` | `{ step, signal?, interrupt(payload), resumeValue, resumed }` | node callback args; `interrupt` triggers HITL pause |
+| `RunResult` | `{ status, state, checkpointId, interrupt?, error?, events, steps }` | one run's result |
+
+`compile()` options: `checkpointer` (any `Storage`), `checkpointPrefix`, `observer`, `maxSteps`, `now`.
+
 ### 🔤 Types (`types`)
 
 `ActionType`, `Action`, `ThinkAction`, `ReflectAction`, `CallAction`, `AnswerAction`,
@@ -403,9 +450,12 @@ class RedisStorage implements Storage {
 | Node-file `NodeStorage` | ✅ **new in 1.0.0** | zero-dep Node persistence |
 | Runnable dev examples `examples/` | ✅ **new in 1.0.0** | quickstart / custom-adapter template |
 | Full dev docs + API reference | ✅ **new in 1.0.0** | this README |
-| npm public release | ✅ published | `@codecloud-dev/agent-core`, install via `npm i` |
+| npm public release | ✅ published | `@codecloud-dev/agent-core`; 1.1.1 live, 1.1.2 pending release |
+| Stateful graph / checkpoint / HITL / time-travel | ✅ **new in 1.1.2** | `StateGraph` / `CompiledGraph`, LangGraph-style |
+| Graph observability event stream | ✅ **new in 1.1.2** | `observer` + `events`; `ActionLogger` stays as guardrail callback |
+| Concurrency-safe daily breaker (CAS claim) | ✅ **fixed in 1.1.2** | 10 concurrent calls at cap=3 no longer break through |
+| Real benchmark script | ✅ **new in 1.1.2** | `npm run bench -- 200` |
 | More official adapter examples (Redis / Prisma / DynamoDB) | ⏳ planned | community welcome |
-| Guardrail metrics / observability export | ⏳ planned | `ActionLogger` callback already in place |
 
 ---
 
@@ -423,15 +473,26 @@ No. `guardExecute` only applies to `mid`/`low`; `high` is intercepted by the upp
 **Q: How to reset the breaker / shadow state?**
 Just delete the keys via `Storage` (`agent:gate` / `agent:shadow`); `MemoryStorage` provides `clear()`.
 
+**Q: Can the daily quota be broken through under concurrency?**
+No (fixed in 1.1.2). `guardExecute` atomically claims a slot before executing and releases it if execution fails; all three built-in `Storage` adapters implement `compareAndSwapJSON`, with D1 using a conditional SQL update for cross-Worker atomicity. Multiple processes writing the same local `NodeStorage` file have no cross-process file lock — use a backend with atomic CAS (D1 / Redis) for that case.
+
+**Q: How does an interrupted node get the human input?**
+`invoke` returns `status='interrupted'` plus a `checkpointId`; call `resume(checkpointId, value)`. Inside the node, read `ctx.resumeValue` and check `ctx.resumed` to know it is a re-run.
+
 ---
 
 ## 🧪 Tests
 
 ```bash
-npm test      # bundles with esbuild, then runs against an in-memory Storage mock, full path coverage
+npm test                    # esbuild bundle, then 4 test files — 116 assertions, all green
+npm run build               # cjs + esm + tsc declarations
+npx tsc --noEmit            # type check
+npm run bench -- 200        # real benchmark (run npm run build first)
 ```
 
-Coverage: ① action normalization; ② tool tiering; ③ daily breaker; ④ shadow mode; ⑤ guardExecute (breaker-block / shadow-sim / low-risk no-quota / normal exec); ⑥ ReflectGate loop; ⑦ think/reflect construction & validation; ⑧ MemoryStorage / NodeStorage round-trip.
+Coverage: ① action normalization; ② tool tiering; ③ daily breaker (local-date bucketing + concurrent CAS claim); ④ shadow mode; ⑤ all guardExecute branches; ⑥ ReflectGate loop; ⑦ think/reflect construction & validation; ⑧ MemoryStorage / NodeStorage round-trip; ⑨ stateful graph: routing / checkpoint chain / HITL resume / time-travel fork / observability / maxSteps / error snapshots.
+
+Local `npm test` result: `47 + 9 + 23 + 37 = 116` passed, 0 failed (exit code 0). Benchmark `npm run bench -- 200` (node v22.13.1, range over 4 consecutive samples, fluctuates with load): 200-step graph / 202 checkpoints in 2.59–3.11 ms (~64k–77k steps/s); MemoryStorage write 0.42–0.59 ms / read 0.15–0.18 ms; NodeStorage per-key write 46.57–52.48 ms vs `autosync:false` + `flush()` batch 0.59–0.89 ms (~76–79x); guardExecute concurrent claims 1.35–2.04 ms (~98k–148k ops/s).
 
 ---
 

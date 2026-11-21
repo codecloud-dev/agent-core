@@ -277,7 +277,7 @@ npx tsx examples/quickstart.ts
 
 ### 🔹 6. 有状态图：checkpoint / HITL / time-travel / 可观测（1.1.2 新增）
 
-把「先审后批」这类多步流程编排成图——每步自动落盘，遇到需要人拍板的地方暂停，批准后再续跑：
+把「先审后批」这类多步流程编排成图——每步自动落盘，遇到需要人工确认的地方暂停，批准后再续跑：
 
 ```ts
 import { StateGraph, NodeStorage } from '@codecloud-dev/agent-core';
@@ -329,7 +329,7 @@ const fork = await app.invoke(undefined, {
 | `call`   | 调工具（带 `why` 可见思考） | 中危走批准门，高危永远人工确认 |
 | `answer` | 自然语言收尾 | 打字机输出 |
 
-`think` 的 `perspectives` 固定四视角：`决策者 / 用户 / 安全 / 成本`——逼 Agent 每次决策都从这四个立场过一遍（拍板的人/受众/风险/资源）。可用 `missingPerspectives()` 校验四视角是否齐全。
+`think` 的 `perspectives` 固定四视角：`决策者 / 用户 / 安全 / 成本`——逼 Agent 每次决策都从这四个立场过一遍（负责人/受众/风险/资源）。可用 `missingPerspectives()` 校验四视角是否齐全。
 
 ### 🔹 工具风险分级
 

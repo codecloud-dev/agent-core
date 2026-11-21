@@ -9,7 +9,7 @@
 export type ActionType = 'think' | 'reflect' | 'call' | 'answer';
 
 // 四视角：强制 Agent 从多个立场交叉检视一次决策，通用适用于各类 Agent 场景。
-// 决策者(拍板的人/owner) · 用户(受众) · 安全(风险) · 成本(资源)
+// 决策者(负责人) · 用户(受众) · 安全(风险) · 成本(资源)
 export type Perspective = '决策者' | '用户' | '安全' | '成本';
 
 export interface ThinkReasoning {

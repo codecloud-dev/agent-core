@@ -135,8 +135,10 @@ if (gate.isPending) reject('请先 reflect 再收尾');
 ### 🔹 2. 分级护栏：让自主执行可控
 
 ```ts
-import { guardExecute, defaultRemediationTier, isShadowMode } from '@codecloud-dev/agent-core';
-import { MemoryStorage } from '@codecloud-dev/agent-core'; // 本地/测试零依赖；生产换 D1Storage / NodeStorage
+import {
+  checkDailyGate, guardExecute, defaultRemediationTier,
+  isShadowMode, MemoryStorage,
+} from '@codecloud-dev/agent-core'; // 本地/测试用 MemoryStorage；生产换 D1Storage / NodeStorage
 
 const deps = {
   storage: new MemoryStorage(),   // 任何实现 Storage 的都行
@@ -149,10 +151,11 @@ const deps = {
   logger: { log: (lvl, kind, action, detail) => recordAudit(lvl, kind, action, detail) },
 };
 
-// 单日额度耗尽 → 直接拦截（blocked），不会真执行
+// 先看额度（只读，不会占名额）
 const gate = await checkDailyGate(deps);
+console.log(`今日剩余 ${gate.remain}/${gate.cap}`);
 
-// 中危动作：若开了影子模式 → 只模拟上报；否则真执行并计额度
+// 中危动作：开了影子模式 → 只模拟上报；否则真执行并计额度
 const res = await guardExecute(deps, 'disable_channel', { id: 7 });
 if (res.blocked)    alert('今日自动变更额度已耗尽');
 else if (res.simulated) reviewLater(res.summary); // 影子模式
@@ -221,17 +224,27 @@ esbuild worker.ts --bundle --format=esm --outfile=dist/worker.js
 import { guardExecute, MemoryStorage, setShadowMode, defaultRemediationTier } from '@codecloud-dev/agent-core';
 
 const fakeExec = { async execute() { return { ok: true, summary: 'mock' }; } };
-const storage = new MemoryStorage();
+const deps = {
+  storage: new MemoryStorage(), executor: fakeExec,
+  remediationTier: defaultRemediationTier, defaultCap: 1,
+};
 
-// 单日额度耗尽 → blocked（不会真执行）
-const g1 = await guardExecute({ storage, executor: fakeExec, remediationTier: defaultRemediationTier }, 'add_credits', { uid: 1, amount: 10 });
-console.log(g1.blocked);   // true
+// 第一次真实执行成功，占掉当日唯一额度
+const g1 = await guardExecute(deps, 'add_credits', { uid: 1, amount: 10 });
+console.log(g1.ok);        // true
+// 第二次额度耗尽 → blocked（不会真执行）
+const g2 = await guardExecute(deps, 'add_credits', { uid: 1, amount: 10 });
+console.log(g2.blocked);   // true
 
-// 开启影子模式 → 中危只模拟上报
-await setShadowMode(storage, true);
-const g2 = await guardExecute({ storage, executor: fakeExec, remediationTier: defaultRemediationTier }, 'add_credits', { uid: 1, amount: 10 });
-console.log(g2.simulated); // true
-storage.clear();
+// 开启影子模式 → 中危只模拟上报（换一份干净额度）
+const storage2 = new MemoryStorage();
+await setShadowMode(storage2, true);
+const g3 = await guardExecute(
+  { ...deps, storage: storage2 }, 'add_credits', { uid: 1, amount: 10 },
+);
+console.log(g3.simulated); // true
+deps.storage.clear();
+storage2.clear();
 ```
 
 ### 🔹 4. 接入 Web 框架（以 Hono 为例）

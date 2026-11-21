@@ -132,8 +132,10 @@ if (gate.isPending) reject('reflect before finishing');
 ### 🔹 2. Tiered guardrails: make autonomous execution controllable
 
 ```ts
-import { guardExecute, defaultRemediationTier, isShadowMode } from '@codecloud-dev/agent-core';
-import { MemoryStorage } from '@codecloud-dev/agent-core'; // zero-dep local/test; swap to D1Storage / NodeStorage in prod
+import {
+  checkDailyGate, guardExecute, defaultRemediationTier,
+  isShadowMode, MemoryStorage,
+} from '@codecloud-dev/agent-core'; // MemoryStorage is zero-dep; swap to D1Storage / NodeStorage in prod
 
 const deps = {
   storage: new MemoryStorage(),   // anything implementing Storage works
@@ -146,8 +148,9 @@ const deps = {
   logger: { log: (lvl, kind, action, detail) => recordAudit(lvl, kind, action, detail) },
 };
 
-// daily quota exhausted -> blocked, never really executed
+// Read-only quota check: this does not consume a slot.
 const gate = await checkDailyGate(deps);
+console.log(`Today's remaining quota: ${gate.remain}/${gate.cap}`);
 
 // mid-risk action: if shadow mode is on -> only simulated & reported; otherwise really executes and counts quota
 const res = await guardExecute(deps, 'disable_channel', { id: 7 });
@@ -218,17 +221,27 @@ esbuild worker.ts --bundle --format=esm --outfile=dist/worker.js
 import { guardExecute, MemoryStorage, setShadowMode, defaultRemediationTier } from '@codecloud-dev/agent-core';
 
 const fakeExec = { async execute() { return { ok: true, summary: 'mock' }; } };
-const storage = new MemoryStorage();
+const deps = {
+  storage: new MemoryStorage(), executor: fakeExec,
+  remediationTier: defaultRemediationTier, defaultCap: 1,
+};
 
-// daily quota exhausted -> blocked (never really executed)
-const g1 = await guardExecute({ storage, executor: fakeExec, remediationTier: defaultRemediationTier }, 'add_credits', { uid: 1, amount: 10 });
-console.log(g1.blocked);   // true
+// First real execution succeeds and consumes the only slot for today.
+const g1 = await guardExecute(deps, 'add_credits', { uid: 1, amount: 10 });
+console.log(g1.ok);        // true
+// Second call is blocked before the executor runs.
+const g2 = await guardExecute(deps, 'add_credits', { uid: 1, amount: 10 });
+console.log(g2.blocked);   // true
 
-// enable shadow mode -> mid-risk only simulated & reported
-await setShadowMode(storage, true);
-const g2 = await guardExecute({ storage, executor: fakeExec, remediationTier: defaultRemediationTier }, 'add_credits', { uid: 1, amount: 10 });
-console.log(g2.simulated); // true
-storage.clear();
+// Enable shadow mode with a fresh quota -> mid-risk is only simulated.
+const storage2 = new MemoryStorage();
+await setShadowMode(storage2, true);
+const g3 = await guardExecute(
+  { ...deps, storage: storage2 }, 'add_credits', { uid: 1, amount: 10 },
+);
+console.log(g3.simulated); // true
+deps.storage.clear();
+storage2.clear();
 ```
 
 ### 🔹 4. Web framework (Hono example)

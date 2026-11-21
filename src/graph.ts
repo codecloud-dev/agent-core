@@ -135,6 +135,27 @@ export class StateGraph<S = any> {
 
   compile(opts: CompileOptions<S> = {}): CompiledGraph<S> {
     if (!this.entry) throw new Error('StateGraph: 未设置入口节点（setEntry）');
+    // 构图期就把静态边的拼写错误挡住：否则用户要等到 invoke 跑到那条边，
+    // 才收到「节点未注册」的运行时错误，并且前面几个节点已经产生了副作用。
+    const invalidTargets: string[] = [];
+    for (const [from, targets] of this.edges) {
+      if (!this.nodes.has(from)) {
+        invalidTargets.push(`edge from "${from}" 的起点未注册`);
+      }
+      for (const to of targets) {
+        if (to !== this.finish && !this.nodes.has(to)) {
+          invalidTargets.push(`edge "${from}" -> "${to}" 的目标未注册`);
+        }
+      }
+    }
+    for (const from of this.routers.keys()) {
+      if (!this.nodes.has(from)) {
+        invalidTargets.push(`conditional edge from "${from}" 的起点未注册`);
+      }
+    }
+    if (invalidTargets.length) {
+      throw new Error(`StateGraph: 构图非法：${invalidTargets.join('；')}`);
+    }
     return new CompiledGraph(this, opts);
   }
 

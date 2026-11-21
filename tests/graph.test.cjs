@@ -171,6 +171,26 @@ function eq(name, a, b) { ok(name + ' (=' + JSON.stringify(b) + ')', a === b, 'g
     require('fs').rmSync(file, { force: true });
   }
 
+  console.log('\n[G10] 构图期拦截静态边拼写错误（不再等 invoke 到一半才炸）');
+  {
+    const g = new m.StateGraph();
+    g.addNode('a', () => ({})).addEdge('a', 'missing-node').setEntry('a');
+    let msg = '';
+    try { g.compile(); } catch (e) { msg = e.message; }
+    ok('compile 抛错', !!msg, msg || '未抛错');
+    ok('错误指出具体目标', /missing-node/.test(msg), msg);
+
+    const g2 = new m.StateGraph();
+    g2.addNode('a', () => ({})).addEdge('ghost', 'a').setEntry('a');
+    let msg2 = '';
+    try { g2.compile(); } catch (e) { msg2 = e.message; }
+    ok('起点未注册也在构图期拦截', /ghost/.test(msg2), msg2 || '未抛错');
+
+    const g3 = new m.StateGraph();
+    g3.addNode('a', () => ({})).addEdge('a', '__end__').setEntry('a');
+    ok('合法图仍可 compile', !!g3.compile());
+  }
+
   console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
   process.exit(fail ? 1 : 0);
 })().catch((e) => { console.error('测试异常：', e); process.exit(1); });
